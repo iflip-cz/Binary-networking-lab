@@ -176,7 +176,12 @@ function startTimer() {
     if (GAME_MODE !== 1) return;
     timerInterval = setInterval(() => {
         timeLeft--;
-        if (elTimer) elTimer.textContent = timeLeft;
+        if (elTimer) {
+            elTimer.textContent = timeLeft;
+            elTimer.className   = "timer";
+            if      (timeLeft <= 5)  elTimer.classList.add("timer--crit");
+            else if (timeLeft <= 15) elTimer.classList.add("timer--warn");
+        }
         if (timeLeft <= 0) { clearInterval(timerInterval); endGame(); }
     }, 1000);
 }

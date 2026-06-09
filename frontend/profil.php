@@ -59,11 +59,11 @@ $accuracy = ($user["Q_answerd"] > 0)
     <section class="stats">
         <h3>Statistiky</h3>
         <ul>
-            <li>Nejlepší skóre – Time Attack: <strong><?= (int)$user["highscore_1gm"] ?></strong></li>
-            <li>Nejlepší streak – Training Lab: <strong><?= (int)$user["highscore_2gm"] ?></strong></li>
-            <li>Celkově zodpovězeno: <strong><?= (int)$user["Q_answerd"] ?></strong></li>
-            <li>Správně: <strong><?= (int)$user["Q_correct"] ?></strong></li>
-            <li>Přesnost: <strong><?= $accuracy ?>%</strong></li>
+            <li><strong><?= (int)$user["highscore_1gm"] ?></strong>Nejlepší skóre — Time Attack</li>
+            <li><strong><?= (int)$user["highscore_2gm"] ?></strong>Nejlepší streak — Training Lab</li>
+            <li><strong><?= (int)$user["Q_answerd"] ?></strong>Celkově zodpovězeno</li>
+            <li><strong><?= (int)$user["Q_correct"] ?></strong>Správně zodpovězeno</li>
+            <li><strong><?= $accuracy ?>%</strong>Přesnost odpovědí</li>
         </ul>
     </section>
 

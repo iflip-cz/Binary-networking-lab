@@ -24,6 +24,7 @@ $errorCode = $_GET["error"] ?? "";
 </head>
 <body>
 
+<p class="site-tag">Binary Networking Lab</p>
 <h2>Registrace</h2>
 
 <form method="post" action="../backend/register_process.php">

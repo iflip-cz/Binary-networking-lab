@@ -6,7 +6,7 @@
 // =========================================================
 
 function connectDB() {
-    $dsn = "mysql:host=localhost;dbname=zwa_projekt;charset=utf8mb4";
+    $dsn = "mysql:host=localhost;dbname=projekt_zwa;charset=utf8mb4";
     $user = "root";
     $pass = "";
 

@@ -1,0 +1,363 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg-1:      #0b0b0e;   /* slightly darker — more immersive */
+    --bg-2:      #121217;
+    --bg-3:      #18181f;
+    --border:    #222230;
+
+    --ac:        #f97316;
+    --ac-lt:     #fb923c;
+    --ac-dim:    rgba(249,115,22,.10);
+    --ac-border: rgba(249,115,22,.22);
+
+    --tx-0:  #ececf2;
+    --tx-1:  #8e8ea0;
+    --tx-2:  #484858;
+
+    --red:    #f87171;
+    --green:  #34d399;
+    --gold:   #fbbf24;
+
+    --sans: "IBM Plex Sans",  system-ui, sans-serif;
+    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --r:    10px;
+}
+
+::selection { background: var(--ac); color: var(--bg-1); }
+
+/* ── Full-screen lock ──────────────────────────────────── */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--sans);
+    background: var(--bg-1);
+    /* Very subtle scanline — gives CRT / terminal feel */
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,.05) 3px,
+        rgba(0,0,0,.05) 4px
+    );
+    color: var(--tx-0);
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Top bar ───────────────────────────────────────────── */
+header {
+    height: 52px;
+    flex-shrink: 0;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    gap: 16px;
+}
+
+#btn-back {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--tx-1);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color .15s;
+    flex-shrink: 0;
+}
+
+#btn-back:hover { color: var(--ac); }
+
+header h2 {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--tx-1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* ── Timer (Time Attack) ───────────────────────────────── */
+.timer {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--tx-0);
+    letter-spacing: -0.04em;
+    min-width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+    transition: color .3s;
+}
+
+/* Added by JS at ≤15s */
+.timer--warn { color: var(--gold); }
+
+/* Added by JS at ≤5s — also pulses */
+.timer--crit {
+    color: var(--red);
+    animation: pulse-crit 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-crit {
+    from { opacity: 1; }
+    to   { opacity: 0.55; }
+}
+
+/* ── Streak display (Training Lab) ────────────────────── */
+.streak {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--tx-1);
+    flex-shrink: 0;
+}
+
+#streak-count {
+    color: var(--gold);
+    font-size: 1.4rem;
+    font-weight: 600;
+    vertical-align: middle;
+    letter-spacing: -0.03em;
+    margin-left: 6px;
+}
+
+/* ── Main game area ────────────────────────────────────── */
+#game-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 32px 24px;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ── Question box ──────────────────────────────────────── */
+#question-box {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    /* Left accent stripe */
+    box-shadow: inset 3px 0 0 var(--ac);
+}
+
+/* Subtle corner bracket decoration */
+#question-box::before,
+#question-box::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--border);
+    border-style: solid;
+}
+
+#question-box::before {
+    top: 10px; right: 10px;
+    border-width: 1px 1px 0 0;
+}
+
+#question-box::after {
+    bottom: 10px; left: 10px;
+    border-width: 0 0 1px 1px;
+}
+
+#question-text {
+    font-family: var(--mono);
+    font-size: clamp(1rem, 2.2vw, 1.45rem);
+    font-weight: 500;
+    color: var(--tx-0);
+    letter-spacing: -0.01em;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+/* ── Answer input ──────────────────────────────────────── */
+#answer-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--tx-0);
+    text-align: center;
+    letter-spacing: 0.08em;
+    outline: none;
+    caret-color: var(--ac);
+    transition: border-color .18s, box-shadow .18s;
+}
+
+#answer-input:focus {
+    border-color: var(--ac);
+    box-shadow: 0 0 0 3px var(--ac-dim);
+}
+
+#answer-input::placeholder { color: var(--tx-2); }
+
+/* ── Submit button ─────────────────────────────────────── */
+#btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--ac);
+    color: var(--bg-1);
+    border: none;
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background .18s, transform .13s;
+}
+
+#btn-submit:hover  { background: var(--ac-lt); transform: translateY(-1px); }
+#btn-submit:active { transform: scale(.98); }
+
+/* ── Feedback flash ────────────────────────────────────── */
+.feedback {
+    min-height: 24px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.02em;
+    transition: opacity .15s;
+}
+
+.feedback.ok    { color: var(--green); animation: pop-in .2s ease-out; }
+.feedback.wrong { color: var(--red);   animation: pop-in .2s ease-out; }
+
+@keyframes pop-in {
+    from { transform: scale(.85); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Score bar ─────────────────────────────────────────── */
+#score-bar {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--tx-2);
+    letter-spacing: 0.08em;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+#score-correct { color: var(--green); font-size: 1rem; font-weight: 600; margin-left: 4px; }
+#score-wrong   { color: var(--red);   font-size: 1rem; font-weight: 600; margin-left: 4px; }
+
+/* ── Game-over overlay ─────────────────────────────────── */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(9,9,12,.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(3px);
+    animation: fade-in .25s ease-out;
+}
+
+.overlay.hidden { display: none; }
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.overlay-box {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 44px;
+    width: min(420px, 90vw);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 40px 100px rgba(0,0,0,.7);
+    animation: slide-up .3s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.overlay-box h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--tx-0);
+    margin-bottom: 8px;
+}
+
+.overlay-box p {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--tx-1);
+}
+
+.overlay-box strong {
+    color: var(--ac);
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.overlay-box button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .18s, transform .13s;
+}
+
+/* "Back to menu" — ghost */
+.overlay-box button:first-of-type {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--tx-1);
+}
+
+.overlay-box button:first-of-type:hover {
+    border-color: var(--ac);
+    color: var(--ac);
+}
+
+/* "Play again" — filled */
+.overlay-box button:last-of-type {
+    background: var(--ac);
+    border: 1px solid transparent;
+    color: var(--bg-1);
+}
+
+.overlay-box button:last-of-type:hover {
+    background: var(--ac-lt);
+    transform: translateY(-1px);
+}

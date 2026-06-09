@@ -15,6 +15,7 @@ if (isset($_SESSION["user_id"])) {
 </head>
 <body>
 
+<p class="site-tag">Binary Networking Lab</p>
 <h2>Přihlášení</h2>
 
 <form method="post" action="../backend/login_process.php">

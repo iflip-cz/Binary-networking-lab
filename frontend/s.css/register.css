@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Design tokens ─────────────────────────────────────── */
+:root {
+    --bg-0:      #09090c;
+    --bg-1:      #0e0e12;
+    --bg-2:      #14141a;
+    --bg-3:      #1b1b23;
+    --border:    #252530;
+    --border-hi: #33334a;
+
+    --ac:        #f97316;
+    --ac-lt:     #fb923c;
+    --ac-dim:    rgba(249,115,22,.10);
+    --ac-border: rgba(249,115,22,.22);
+
+    --tx-0:  #ececf2;
+    --tx-1:  #8e8ea0;
+    --tx-2:  #484858;
+
+    --red:   #f87171;
+    --green: #34d399;
+
+    --sans: "IBM Plex Sans",  system-ui, sans-serif;
+    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --r:    10px;
+}
+
+::selection { background: var(--ac); color: var(--bg-0); }
+
+/* ── Page ──────────────────────────────────────────────── */
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: var(--sans);
+    background-color: var(--bg-1);
+    /* Subtle grid texture */
+    background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+    color: var(--tx-0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Brand tag above the form ──────────────────────────── */
+.site-tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ac);
+    margin-bottom: 20px;
+    opacity: 0.85;
+}
+
+h2 {
+    margin: 0 0 26px;
+    font-family: var(--mono);
+    font-size: clamp(1.4rem, 4vh, 2rem);
+    font-weight: 600;
+    color: var(--tx-0);
+    text-align: center;
+    letter-spacing: -0.03em;
+}
+
+/* ── Form card ─────────────────────────────────────────── */
+form {
+    width: 100%;
+    max-width: 390px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(24px, 5vh, 40px) clamp(24px, 5vw, 38px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 2vh, 15px);
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,.02) inset,
+        0 32px 80px rgba(0,0,0,.65);
+}
+
+label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--tx-2);
+    margin-bottom: -4px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    color: var(--tx-0);
+    outline: none;
+    caret-color: var(--ac);
+    transition: border-color .18s, box-shadow .18s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--ac);
+    box-shadow: 0 0 0 3px var(--ac-dim);
+}
+
+/* Filled but not focused */
+input[type="text"]:not(:placeholder-shown):not(:focus),
+input[type="email"]:not(:placeholder-shown):not(:focus),
+input[type="password"]:not(:placeholder-shown):not(:focus) {
+    border-color: var(--ac-border);
+}
+
+input[type="submit"] {
+    width: 100%;
+    padding: clamp(11px, 1.8vh, 14px);
+    background: var(--ac);
+    color: var(--bg-0);
+    border: none;
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background .18s, transform .13s;
+}
+
+input[type="submit"]:hover  { background: var(--ac-lt); transform: translateY(-1px); }
+input[type="submit"]:active { transform: scale(.98); }
+
+form div {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--tx-1);
+    margin-top: 2px;
+}
+
+a { color: var(--ac); text-decoration: none; font-weight: 600; transition: opacity .15s; }
+a:hover { opacity: .75; }
+
+/* ── Error banner ──────────────────────────────────────── */
+.error {
+    width: 100%;
+    max-width: 390px;
+    margin-top: 14px;
+    padding: 11px 16px;
+    background: rgba(248,113,113,.07);
+    border: 1px solid rgba(248,113,113,.22);
+    border-radius: var(--r);
+    color: var(--red);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: center;
+    animation: shake .35s ease-in-out;
+}
+
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-5px); }
+    75%      { transform: translateX(5px); }
+}

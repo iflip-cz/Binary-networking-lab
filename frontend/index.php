@@ -15,7 +15,8 @@ if (isset($_SESSION["user_id"])) {
 </head>
 <body>
 
-    <h2>Binary Networking Lab</h2>
+    <h2>Binary <span class="hi">Networking</span> Lab</h2>
+    <p class="tagline">// learn · convert · compete</p>
 
     <div class="picture-space"></div>
 

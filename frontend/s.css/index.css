@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+    --bg-1:      #0e0e12;
+    --bg-2:      #14141a;
+    --bg-3:      #1b1b23;
+    --border:    #252530;
+
+    --ac:        #f97316;
+    --ac-lt:     #fb923c;
+    --ac-dim:    rgba(249,115,22,.10);
+
+    --tx-0:  #ececf2;
+    --tx-1:  #8e8ea0;
+    --tx-2:  #484858;
+
+    --sans: "IBM Plex Sans",  system-ui, sans-serif;
+    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --r:    10px;
+}
+
+::selection { background: var(--ac); color: var(--bg-1); }
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--sans);
+    background-color: var(--bg-1);
+    /* Dot grid — classic dev tool texture */
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 26px 26px;
+    background-attachment: fixed;
+    color: var(--tx-0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header / Hero ─────────────────────────────────────── */
+h2 {
+    margin: 64px 0 4px;
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 3.8vw, 2.8rem);
+    font-weight: 600;
+    color: var(--tx-0);
+    text-align: center;
+    letter-spacing: -0.04em;
+}
+
+/* Orange part inside h2 — wrap in <span class="hi"> in PHP */
+.hi { color: var(--ac); }
+
+.tagline {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--tx-2);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+/* ── Picture placeholder ───────────────────────────────── */
+.picture-space {
+    width: min(600px, 88%);
+    height: 190px;
+    margin: 40px auto 0;
+    background: var(--bg-2);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.picture-space::before {
+    content: "/* image_placeholder */";
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--tx-2);
+}
+
+/* Subtle corner marks */
+.picture-space::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+/* ── Slideshow ─────────────────────────────────────────── */
+.content-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: min(580px, 90%);
+    padding: 0 48px;
+    margin-top: 40px;
+}
+
+.slides-wrapper {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 36px;
+    text-align: center;
+    /* Left accent bar */
+    box-shadow: inset 3px 0 0 var(--ac);
+}
+
+.slide { display: none; }
+.slide.active { display: block; }
+
+.slide h3 {
+    margin: 0 0 10px;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ac);
+    letter-spacing: -0.01em;
+}
+
+.slide p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--tx-1);
+    line-height: 1.7;
+}
+
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--tx-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .18s, color .18s, background .18s;
+}
+
+.arrow:hover  { border-color: var(--ac); color: var(--ac); background: var(--bg-3); }
+.prev { left: 0; }
+.next { right: 0; }
+
+/* ── Footer buttons ────────────────────────────────────── */
+footer {
+    padding: 48px 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+footer input[type="button"] {
+    padding: 12px 28px;
+    font-family: var(--sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: background .18s, border-color .18s, color .18s, transform .13s;
+}
+
+/* Login — ghost */
+footer input[type="button"]:nth-of-type(1) {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--tx-1);
+}
+
+footer input[type="button"]:nth-of-type(1):hover {
+    border-color: var(--ac);
+    color: var(--ac);
+    background: var(--ac-dim);
+}
+
+/* Register — filled primary */
+footer input[type="button"]:nth-of-type(2) {
+    background: var(--ac);
+    border: 1px solid transparent;
+    color: var(--bg-1);
+}
+
+footer input[type="button"]:nth-of-type(2):hover {
+    background: var(--ac-lt);
+    transform: translateY(-1px);
+}
