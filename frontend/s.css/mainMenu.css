@@ -1,22 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg-1:      #0e0e12;
-    --bg-2:      #14141a;
-    --bg-3:      #1b1b23;
-    --border:    #252530;
-    --border-hi: #333344;
+    --bg-1:      #100e0d;
+    --bg-2:      #19161a;
+    --bg-3:      #221e22;
+    --border:    #2e2830;
+    --border-hi: #3d3640;
 
     --ac:        #f97316;
     --ac-lt:     #fb923c;
     --ac-dim:    rgba(249,115,22,.09);
     --ac-border: rgba(249,115,22,.20);
 
-    --tx-0:  #ececf2;
-    --tx-1:  #8e8ea0;
-    --tx-2:  #484858;
+    --tx-0:  #ede8ec;
+    --tx-1:  #8e8490;
+    --tx-2:  #504858;
 
     --red:    #f87171;
     --green:  #34d399;
@@ -24,23 +24,26 @@
     --silver: #94a3b8;
     --bronze: #cd8b4a;
 
-    --sans: "IBM Plex Sans",  system-ui, sans-serif;
-    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --sans: "Outfit",        system-ui, sans-serif;
+    --mono: "JetBrains Mono","Fira Code", Consolas, monospace;
     --r:    10px;
 }
 
 ::selection { background: var(--ac); color: var(--bg-1); }
 
 body {
-    margin: 0;
     font-family: var(--sans);
     background: var(--bg-1);
+    background-image: radial-gradient(ellipse 80% 35% at 50% 0%,
+        rgba(249,115,22,.06) 0%, transparent 65%);
     color: var(--tx-0);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Sticky top nav ────────────────────────────────────── */
+/* ── Sticky header ──────────────────────────────────────── */
 header {
     position: sticky;
     top: 0;
@@ -52,12 +55,10 @@ header {
     align-items: center;
     justify-content: space-between;
     padding: 0 28px;
-    /* Subtle orange left accent */
     box-shadow: inset 2px 0 0 var(--ac);
 }
 
 header h1 {
-    margin: 0;
     font-family: var(--mono);
     font-size: 0.82rem;
     font-weight: 600;
@@ -69,13 +70,53 @@ header h1 {
 header nav {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
-header nav a {
+/* ── Profile avatar chip ────────────────────────────────── */
+.nav-avatar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--tx-1);
+    padding: 4px 10px 4px 5px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    transition: border-color .17s, background .17s, color .17s;
+}
+
+.nav-avatar:hover {
+    border-color: var(--ac-border);
+    background: var(--ac-dim);
+    color: var(--tx-0);
+}
+
+.avatar-init {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--ac);
+    color: var(--bg-1);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar-name {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+}
+
+/* Plain nav links (admin, logout) */
+header nav a:not(.nav-avatar) {
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--tx-1);
+    color: var(--tx-2);
     text-decoration: none;
     padding: 5px 12px;
     border-radius: 7px;
@@ -83,34 +124,27 @@ header nav a {
     transition: color .17s, border-color .17s, background .17s;
 }
 
-header nav a:hover {
-    color: var(--tx-0);
-    background: var(--bg-3);
-    border-color: var(--border);
-}
-
-/* Logout link — subtle red tint on hover */
-header nav a:last-child { color: var(--tx-2); }
-header nav a:last-child:hover {
+header nav a:not(.nav-avatar):hover {
     color: var(--red);
     background: rgba(248,113,113,.06);
     border-color: rgba(248,113,113,.18);
 }
 
-/* ── Page layout ───────────────────────────────────────── */
+/* ── Page body ──────────────────────────────────────────── */
 main {
+    flex-grow: 1;
     max-width: 1060px;
     margin: 0 auto;
-    padding: 44px 28px 72px;
+    padding: 44px 28px 56px;
     display: flex;
     flex-direction: column;
     gap: 52px;
+    width: 100%;
 }
 
-/* Section title — with orange left bar */
 h2 {
     font-family: var(--mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.14em;
@@ -131,7 +165,7 @@ h2::before {
     flex-shrink: 0;
 }
 
-/* ── Game-mode card grid ───────────────────────────────── */
+/* ── Game mode cards ────────────────────────────────────── */
 .mode-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
@@ -148,13 +182,12 @@ h2::before {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    transition: border-color .18s, background .18s, transform .18s, box-shadow .18s;
     position: relative;
     overflow: hidden;
+    transition: border-color .18s, background .18s, transform .18s, box-shadow .18s;
 }
 
 .mode-card::before {
-    /* Top accent line — hidden by default */
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -169,22 +202,22 @@ h2::before {
     border-color: var(--ac-border);
     background: var(--bg-3);
     transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,.4);
+    box-shadow: 0 12px 32px rgba(0,0,0,.35);
 }
 
 .mode-card:hover::before { transform: scaleX(1); }
 
 .mode-card h3 {
-    margin: 0;
     font-family: var(--mono);
     font-size: 0.88rem;
     font-weight: 600;
     color: var(--tx-0);
+    margin: 0;
 }
 
 .mode-card .badge {
     font-family: var(--mono);
-    font-size: 0.67rem;
+    font-size: 0.66rem;
     letter-spacing: 0.06em;
     color: var(--ac);
     background: var(--ac-dim);
@@ -194,27 +227,17 @@ h2::before {
     width: fit-content;
 }
 
-.mode-card p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--tx-1);
-    line-height: 1.6;
-}
-
-/* Training Lab card — dashed border to signal "different mode" */
+.mode-card p { margin: 0; font-size: 0.8rem; color: var(--tx-1); line-height: 1.6; }
 .mode-card:last-child { border-style: dashed; }
 
-/* ── Leaderboard ───────────────────────────────────────── */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+/* ── Leaderboard ────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; }
 
 table th {
     font-family: var(--mono);
-    font-size: 0.64rem;
+    font-size: 0.63rem;
     text-transform: uppercase;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.12em;
     color: var(--tx-2);
     padding: 8px 14px;
     text-align: left;
@@ -223,7 +246,7 @@ table th {
 
 table td {
     padding: 11px 14px;
-    border-bottom: 1px solid rgba(37,37,48,.7);
+    border-bottom: 1px solid rgba(46,40,48,.6);
     font-size: 0.85rem;
     color: var(--tx-1);
     transition: background .12s;
@@ -231,16 +254,13 @@ table td {
 
 table tr:hover td { background: var(--bg-2); }
 
-/* Col alignment */
 table th:first-child, table td:first-child { width: 44px; text-align: center; }
 table th:last-child,  table td:last-child  { text-align: right; }
 
-/* Rank numbers */
 table tbody tr:nth-child(1) td:first-child { color: var(--gold);   font-weight: 700; }
 table tbody tr:nth-child(2) td:first-child { color: var(--silver); font-weight: 700; }
 table tbody tr:nth-child(3) td:first-child { color: var(--bronze); font-weight: 700; }
 
-/* Player name — monospace, brighter */
 table td:nth-child(2) {
     font-family: var(--mono);
     font-size: 0.8rem;
@@ -248,32 +268,45 @@ table td:nth-child(2) {
     color: var(--tx-0);
 }
 
-/* Score — orange, bold */
 table td:last-child {
     font-family: var(--mono);
     font-weight: 700;
     color: var(--ac);
 }
 
-/* Current user's row */
-tr.highlight td {
-    background: var(--ac-dim) !important;
-    border-color: var(--ac-border) !important;
-}
+tr.highlight td { background: var(--ac-dim) !important; border-color: var(--ac-border) !important; }
 
 tr.highlight td:nth-child(2)::after {
-    content: " (ty)";
-    font-size: 0.68rem;
+    content: " ·ty";
+    font-size: 0.65rem;
     color: var(--ac);
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .empty-state {
     font-family: var(--mono);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--tx-2);
     padding: 24px 0;
     text-align: center;
 }
 
 .empty-state::before { content: "// "; }
+
+/* ── Footer ─────────────────────────────────────────────── */
+.page-footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 28px;
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    color: var(--tx-2);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.page-footer a { color: var(--tx-2); text-decoration: none; transition: color .15s; }
+.page-footer a:hover { color: var(--ac); }
+.page-footer .sep { opacity: 0.35; }

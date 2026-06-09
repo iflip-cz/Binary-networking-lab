@@ -63,5 +63,12 @@ if (isset($_SESSION["user_id"])) {
 
         setInterval(() => zmenSlide(1), 5000);
     </script>
+    <footer class="page-footer">
+    <span>© 2026 Binary Networking Lab</span>
+    <span class="sep">·</span>
+    <a href="login.php">Přihlásit se</a>
+    <span class="sep">·</span>
+    <a href="register.php">Registrace</a>
+</footer>
 </body>
 </html>

@@ -174,11 +174,6 @@ function getUserHistory($pdo, $id_user, $limit = 10) {
     return $stmt->fetchAll();
 }
 
-// ---------------------------------------------------------
-//  ACHIEVEMENT  functions
-// ---------------------------------------------------------
-
-/** Returns all achievements in the achivements table. */
 function getAllAchievements($pdo) {
     $stmt = $pdo->query("SELECT * FROM achivements ORDER BY rarity, Name");
     return $stmt->fetchAll();

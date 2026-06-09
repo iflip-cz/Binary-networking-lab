@@ -29,9 +29,8 @@ body {
     font-family: var(--sans);
     background-color: var(--bg-1);
     /* Dot grid — classic dev tool texture */
-    background-image: radial-gradient(var(--border) 1px, transparent 1px);
-    background-size: 26px 26px;
-    background-attachment: fixed;
+  background-image: radial-gradient(ellipse 70% 40% at 50% -5%,
+    rgba(249,115,22,.06) 0%, transparent 65%);
     color: var(--tx-0);
     display: flex;
     flex-direction: column;
