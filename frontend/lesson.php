@@ -22,7 +22,7 @@ $modeLabel = $mode === 1
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $modeLabel ?> – Binary Networking Lab</title>
-    <link rel="stylesheet" href=".css/lesson.css">
+    <link rel="stylesheet" href="s.css/lesson.css">
 </head>
 <body>
 
