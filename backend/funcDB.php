@@ -166,11 +166,13 @@ function insertGameHistory($pdo, $data) {
 function getUserHistory($pdo, $id_user, $limit = 10) {
     $stmt = $pdo->prepare("
         SELECT * FROM game_history
-        WHERE Who = ?
+        WHERE Who = :who
         ORDER BY When_Played DESC, ID_GameH DESC
-        LIMIT ?
+        LIMIT :lim
     ");
-    $stmt->execute([$id_user, $limit]);
+    $stmt->bindValue(':who', (int)$id_user, PDO::PARAM_INT);
+    $stmt->bindValue(':lim', (int)$limit,   PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll();
 }
 

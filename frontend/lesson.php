@@ -5,23 +5,20 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
-$mode = isset($_GET["mode"]) ? (int)$_GET["mode"] : 1;   // 1 = Time Attack, 2 = Training Lab
-$time = isset($_GET["time"]) ? (int)$_GET["time"] : 60;  // seconds (30 / 60 / 120)
+$mode = in_array((int)($_GET["mode"] ?? 1), [1,2,3]) ? (int)$_GET["mode"] : 1;
+$time = in_array((int)($_GET["time"] ?? 60), [30,60,120]) ? (int)$_GET["time"] : 60;
+$type = in_array($_GET["type"] ?? "all", ["all","bin","hex","oct"]) ? ($_GET["type"] ?? "all") : "all";
 
-// Validate allowed values
-if (!in_array($mode, [1, 2]))        $mode = 1;
-if (!in_array($time, [30, 60, 120])) $time = 60;
-
-$modeLabel = $mode === 1
-    ? "⚡ Time Attack – {$time}s"
-    : "🧪 Training Lab";
+$modeLabels = [1 => "Time Attack", 2 => "Training Lab", 3 => "Streak Challenge"];
+$modeLabel  = $modeLabels[$mode];
+if ($mode === 1) $modeLabel .= " — {$time}s";
 ?>
 <!doctype html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $modeLabel ?> – Binary Networking Lab</title>
+    <title><?= $modeLabel ?> — BNL</title>
     <link rel="stylesheet" href="s.css/lesson.css">
 </head>
 <body>
@@ -30,155 +27,182 @@ $modeLabel = $mode === 1
     <a href="mainMenu.php" id="btn-back">← Menu</a>
     <h2 id="mode-title"><?= $modeLabel ?></h2>
 
-    <!-- Time Attack: countdown  |  Training Lab: streak counter -->
     <?php if ($mode === 1): ?>
         <div id="timer" class="timer"><?= $time ?></div>
-    <?php else: ?>
-        <div id="streak-display" class="streak">Streak: <span id="streak-count">0</span></div>
+
+    <?php elseif ($mode === 3): ?>
+        <div class="streak-hud">
+            <span class="streak-now">🔥 <span id="streak-count">0</span></span>
+            <span class="streak-best">Best: <span id="streak-best">0</span></span>
+        </div>
+
+    <?php else: /* mode 2 — Training Lab */ ?>
+        <button id="btn-stop" onclick="endGame()">■ Stop</button>
     <?php endif; ?>
 </header>
 
 <main id="game-area">
     <div id="question-box">
-        <p id="question-text">Načítám otázku…</p>
+        <span id="question-label" class="q-label">—</span>
+        <p id="question-value" class="q-value">…</p>
     </div>
 
-    <input type="text" id="answer-input" placeholder="Tvoje odpověď" autocomplete="off">
+    <input type="text" id="answer-input" placeholder="odpověď" autocomplete="off" spellcheck="false">
     <button id="btn-submit">Odeslat ↵</button>
 
     <p id="feedback" class="feedback"></p>
 
     <div id="score-bar">
-        Správně: <span id="score-correct">0</span> &nbsp;|&nbsp;
-        Chybně: <span id="score-wrong">0</span>
+        ✓ <span id="score-correct">0</span>
+        &nbsp;·&nbsp;
+        ✗ <span id="score-wrong">0</span>
     </div>
 </main>
 
 <!-- Game-over overlay -->
 <div id="overlay-gameover" class="overlay hidden">
     <div class="overlay-box">
-        <h2>Hra skončila!</h2>
+        <h2>Hra skončila</h2>
         <p>Správně: <strong id="result-correct">0</strong></p>
-        <p>Chybně:  <strong id="result-wrong">0</strong></p>
-        <p id="result-streak-line">Streak: <strong id="result-streak">0</strong></p>
-        <button onclick="window.location.href='mainMenu.php'">Zpět na menu</button>
+        <p>Chybně: <strong id="result-wrong">0</strong></p>
+        <p id="result-streak-line">Nejdelší streak: <strong id="result-streak">0</strong></p>
+        <button onclick="window.location.href='mainMenu.php'">← Menu</button>
         <button id="btn-play-again">Hrát znovu</button>
     </div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────────────────────
-//  Configuration (passed from PHP)
-// ─────────────────────────────────────────────────────────────
-const GAME_MODE   = <?= $mode ?>;
-const TIME_LIMIT  = <?= $time ?>;   // seconds; ignored in Training Lab
-const USER_ID     = <?= (int)$_SESSION["user_id"] ?>;
+// ── Config ───────────────────────────────────────────
+const GAME_MODE  = <?= $mode ?>;
+const TIME_LIMIT = <?= $time ?>;
+const TRAIN_TYPE = "<?= $type ?>";
+const USER_ID    = <?= (int)$_SESSION["user_id"] ?>;
 
-// ─────────────────────────────────────────────────────────────
-//  State
-// ─────────────────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────
 let correct = 0, wrong = 0, streak = 0, maxStreak = 0;
 let timeLeft = TIME_LIMIT;
 let timerInterval = null;
 let currentQuestion = null;
+let gameActive = true;
 
-// ─────────────────────────────────────────────────────────────
-//  Question generator
-//  Produces: { text, answer, hint }
-// ─────────────────────────────────────────────────────────────
+// ── Question generator ───────────────────────────────
+const POOLS = {
+    bin: ["bin2dec", "dec2bin"],
+    hex: ["hex2dec", "dec2hex", "bin2hex", "hex2bin"],
+    oct: ["oct2dec", "dec2oct"]
+};
+
+function pickType() {
+    const pool = TRAIN_TYPE === "all"
+        ? [...POOLS.bin, ...POOLS.hex, ...POOLS.oct]
+        : POOLS[TRAIN_TYPE];
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function generateQuestion() {
-    const types = ["bin2dec", "dec2bin", "hex2bin", "bin2hex"];
-    const type  = types[Math.floor(Math.random() * types.length)];
+    const t = pickType();
+    const n = Math.floor(Math.random() * 256);
+    const hex = n.toString(16).toUpperCase().padStart(2, "0");
+    const bin = n.toString(2).padStart(8, "0");
+    const oct = n.toString(8);
 
-    let n, text, answer;
-
-    if (type === "bin2dec") {
-        n      = Math.floor(Math.random() * 256);          // 0–255 (one byte)
-        text   = `Převeď binárně → decimálně:  ${n.toString(2).padStart(8,"0")}`;
-        answer = String(n);
-    } else if (type === "dec2bin") {
-        n      = Math.floor(Math.random() * 256);
-        text   = `Převeď decimálně → binárně:  ${n}`;
-        answer = n.toString(2).padStart(8,"0");
-    } else if (type === "hex2bin") {
-        n      = Math.floor(Math.random() * 256);
-        const hex = n.toString(16).toUpperCase().padStart(2,"0");
-        text   = `Převeď hexadecimálně → binárně:  0x${hex}`;
-        answer = n.toString(2).padStart(8,"0");
-    } else {   // bin2hex
-        n      = Math.floor(Math.random() * 256);
-        text   = `Převeď binárně → hexadecimálně:  ${n.toString(2).padStart(8,"0")}`;
-        answer = n.toString(16).toUpperCase().padStart(2,"0");
-    }
-
-    return { text, answer };
+    const map = {
+        "bin2dec": { label: "BIN → DEC", value: bin,       answer: String(n) },
+        "dec2bin": { label: "DEC → BIN", value: String(n), answer: bin       },
+        "hex2dec": { label: "HEX → DEC", value: "0x"+hex,  answer: String(n) },
+        "dec2hex": { label: "DEC → HEX", value: String(n), answer: hex       },
+        "bin2hex": { label: "BIN → HEX", value: bin,       answer: hex       },
+        "hex2bin": { label: "HEX → BIN", value: "0x"+hex,  answer: bin       },
+        "oct2dec": { label: "OCT → DEC", value: "0o"+oct,  answer: String(n) },
+        "dec2oct": { label: "DEC → OCT", value: String(n), answer: oct       },
+    };
+    return { ...map[t], type: t };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  DOM helpers
-// ─────────────────────────────────────────────────────────────
-const elQuestion = document.getElementById("question-text");
-const elInput    = document.getElementById("answer-input");
-const elFeedback = document.getElementById("feedback");
-const elCorrect  = document.getElementById("score-correct");
-const elWrong    = document.getElementById("score-wrong");
-const elStreak   = document.getElementById("streak-count");
-const elTimer    = document.getElementById("timer");
+// ── DOM refs ─────────────────────────────────────────
+const elLabel   = document.getElementById("question-label");
+const elValue   = document.getElementById("question-value");
+const elInput   = document.getElementById("answer-input");
+const elFeed    = document.getElementById("feedback");
+const elCorrect = document.getElementById("score-correct");
+const elWrong   = document.getElementById("score-wrong");
+const elTimer   = document.getElementById("timer");
+const elStreak  = document.getElementById("streak-count");
+const elBest    = document.getElementById("streak-best");
 
-function showFeedback(ok) {
-    elFeedback.textContent = ok ? "✅ Správně!" : `❌ Špatně! Správná odpověď: ${currentQuestion.answer}`;
-    elFeedback.className   = "feedback " + (ok ? "ok" : "wrong");
-    setTimeout(() => { elFeedback.textContent = ""; }, 1200);
-}
-
+// ── Display ──────────────────────────────────────────
 function nextQuestion() {
     currentQuestion = generateQuestion();
-    elQuestion.textContent = currentQuestion.text;
+    elLabel.textContent = currentQuestion.label;
+    elValue.textContent = currentQuestion.value;
     elInput.value = "";
+    elInput.disabled = false;
+    document.getElementById("btn-submit").disabled = false;
     elInput.focus();
 }
 
-function updateScoreDisplay() {
+function showFeedback(ok, correctAns) {
+    if (ok) {
+        elFeed.textContent = "✓ Správně!";
+        elFeed.className = "feedback ok";
+    } else {
+        elFeed.textContent = "✗ Špatně — správně: " + correctAns;
+        elFeed.className = "feedback wrong";
+    }
+    if (ok) setTimeout(() => { elFeed.textContent = ""; }, 900);
+}
+
+function updateDisplay() {
     elCorrect.textContent = correct;
     elWrong.textContent   = wrong;
     if (elStreak) elStreak.textContent = streak;
+    if (elBest)   elBest.textContent   = maxStreak;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Submit answer
-// ─────────────────────────────────────────────────────────────
+// ── Submit ───────────────────────────────────────────
 function submitAnswer() {
-    const raw = elInput.value.trim().toUpperCase().replace(/\s+/g,"");
+    if (!gameActive || !currentQuestion) return;
+    const raw = elInput.value.trim().toUpperCase().replace(/\s+/g, "");
     if (raw === "") return;
 
-    const ok = raw === currentQuestion.answer.toUpperCase().replace(/\s+/g,"");
+    const ok = raw === currentQuestion.answer.toUpperCase();
 
     if (ok) {
         correct++;
         streak++;
         if (streak > maxStreak) maxStreak = streak;
-        showFeedback(true);
+        showFeedback(true, null);
+        updateDisplay();
+        nextQuestion();
     } else {
         wrong++;
+        showFeedback(false, currentQuestion.answer);
         streak = 0;
-        showFeedback(false);
-        if (GAME_MODE === 2) { endGame(); return; }  // Training Lab: one strike ends it
-    }
+        updateDisplay();
 
-    updateScoreDisplay();
-    nextQuestion();
+        if (GAME_MODE === 1 || GAME_MODE === 3) {
+            // Time Attack & Streak: immediately continue
+            nextQuestion();
+        } else {
+            // Training Lab: freeze for 1.8s so user can read the answer
+            elInput.disabled = true;
+            document.getElementById("btn-submit").disabled = true;
+            setTimeout(() => {
+                elFeed.textContent = "";
+                nextQuestion();
+            }, 1800);
+        }
+    }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Timer (Time Attack only)
-// ─────────────────────────────────────────────────────────────
+// ── Timer (mode 1 only) ──────────────────────────────
 function startTimer() {
     if (GAME_MODE !== 1) return;
     timerInterval = setInterval(() => {
         timeLeft--;
         if (elTimer) {
             elTimer.textContent = timeLeft;
-            elTimer.className   = "timer";
+            elTimer.className = "timer";
             if      (timeLeft <= 5)  elTimer.classList.add("timer--crit");
             else if (timeLeft <= 15) elTimer.classList.add("timer--warn");
         }
@@ -186,26 +210,35 @@ function startTimer() {
     }, 1000);
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Game over & save result
-// ─────────────────────────────────────────────────────────────
+// ── End game ─────────────────────────────────────────
 function endGame() {
+    gameActive = false;
     clearInterval(timerInterval);
 
-    // Show overlay
     document.getElementById("result-correct").textContent = correct;
     document.getElementById("result-wrong").textContent   = wrong;
     document.getElementById("result-streak").textContent  = maxStreak;
-    if (GAME_MODE === 1) document.getElementById("result-streak-line").style.display = "none";
+
+    // Hide streak line for Time Attack
+    if (GAME_MODE === 1) {
+        document.getElementById("result-streak-line").style.display = "none";
+    }
+
     document.getElementById("overlay-gameover").classList.remove("hidden");
 
-    // Send result to PHP via fetch
+    // mode 2 (free practice) — no score to save
+    if (GAME_MODE === 2) return;
+
+    // Determine score to record
     const score = GAME_MODE === 1 ? correct : maxStreak;
+    // Map mode 3 → highscore_2gm slot (same as old training lab)
+    const dbMode = GAME_MODE === 1 ? 1 : 2;
+
     fetch("../backend/save_game.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            game_mode:    GAME_MODE,
+            game_mode:    dbMode,
             time_seconds: TIME_LIMIT,
             q_answered:   correct + wrong,
             q_correct:    correct,
@@ -217,14 +250,10 @@ function endGame() {
     });
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Boot
-// ─────────────────────────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────
 document.getElementById("btn-submit").addEventListener("click", submitAnswer);
 elInput.addEventListener("keydown", e => { if (e.key === "Enter") submitAnswer(); });
-document.getElementById("btn-play-again").addEventListener("click", () => {
-    window.location.reload();
-});
+document.getElementById("btn-play-again").addEventListener("click", () => window.location.reload());
 
 nextQuestion();
 startTimer();

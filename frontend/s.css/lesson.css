@@ -1,51 +1,46 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg-1:      #0b0b0e;   /* slightly darker — more immersive */
-    --bg-2:      #121217;
-    --bg-3:      #18181f;
-    --border:    #222230;
+    --bg-1:      #0c0a0b;
+    --bg-2:      #131117;
+    --bg-3:      #1a1820;
+    --border:    #242030;
 
     --ac:        #f97316;
     --ac-lt:     #fb923c;
     --ac-dim:    rgba(249,115,22,.10);
     --ac-border: rgba(249,115,22,.22);
 
-    --tx-0:  #ececf2;
-    --tx-1:  #8e8ea0;
-    --tx-2:  #484858;
+    --tx-0:  #ede8ec;
+    --tx-1:  #8e8490;
+    --tx-2:  #504858;
 
-    --red:    #f87171;
-    --green:  #34d399;
-    --gold:   #fbbf24;
+    --red:   #f87171;
+    --green: #34d399;
+    --gold:  #fbbf24;
 
-    --sans: "IBM Plex Sans",  system-ui, sans-serif;
-    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --sans: "Outfit",        system-ui, sans-serif;
+    --mono: "JetBrains Mono","Fira Code", Consolas, monospace;
     --r:    10px;
 }
 
 ::selection { background: var(--ac); color: var(--bg-1); }
 
-/* ── Full-screen lock ──────────────────────────────────── */
-html, body {
-    height: 100%;
-    overflow: hidden;
-}
+html, body { height: 100%; overflow: hidden; }
 
 body {
     font-family: var(--sans);
     background: var(--bg-1);
-    /* Very subtle scanline — gives CRT / terminal feel */
-
+    /* No scanline — plain dark */
     color: var(--tx-0);
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Top bar ───────────────────────────────────────────── */
+/* ── Header bar ─────────────────────────────────────── */
 header {
     height: 52px;
     flex-shrink: 0;
@@ -64,10 +59,9 @@ header {
     color: var(--tx-1);
     text-decoration: none;
     letter-spacing: 0.04em;
-    transition: color .15s;
     flex-shrink: 0;
+    transition: color .15s;
 }
-
 #btn-back:hover { color: var(--ac); }
 
 header h2 {
@@ -81,7 +75,7 @@ header h2 {
     flex-grow: 1;
 }
 
-/* ── Timer (Time Attack) ───────────────────────────────── */
+/* ── Timer ──────────────────────────────────────────── */
 .timer {
     font-family: var(--mono);
     font-size: 1.7rem;
@@ -93,98 +87,93 @@ header h2 {
     flex-shrink: 0;
     transition: color .3s;
 }
-
-/* Added by JS at ≤15s */
 .timer--warn { color: var(--gold); }
+.timer--crit { color: var(--red); animation: pulse .6s ease-in-out infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .5; } }
 
-/* Added by JS at ≤5s — also pulses */
-.timer--crit {
-    color: var(--red);
-    animation: pulse-crit 0.6s ease-in-out infinite alternate;
-}
-
-@keyframes pulse-crit {
-    from { opacity: 1; }
-    to   { opacity: 0.55; }
-}
-
-/* ── Streak display (Training Lab) ────────────────────── */
-.streak {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--tx-1);
+/* ── Streak HUD (mode 3) ────────────────────────────── */
+.streak-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
     flex-shrink: 0;
 }
-
-#streak-count {
-    color: var(--gold);
-    font-size: 1.4rem;
+.streak-now {
+    font-family: var(--mono);
+    font-size: 1.1rem;
     font-weight: 600;
-    vertical-align: middle;
-    letter-spacing: -0.03em;
-    margin-left: 6px;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+}
+.streak-best {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--tx-2);
+    letter-spacing: 0.06em;
 }
 
-/* ── Main game area ────────────────────────────────────── */
+/* ── Stop button (modes 2 & 3) ──────────────────────── */
+#btn-stop {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--tx-1);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+    transition: color .15s, border-color .15s;
+}
+#btn-stop:hover { color: var(--red); border-color: rgba(248,113,113,.3); }
+
+/* ── Game area ──────────────────────────────────────── */
 #game-area {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 18px;
     padding: 32px 24px;
-    max-width: 680px;
+    max-width: 640px;
     margin: 0 auto;
     width: 100%;
 }
 
-/* ── Question box ──────────────────────────────────────── */
+/* ── Question box ───────────────────────────────────── */
 #question-box {
     width: 100%;
     background: var(--bg-2);
-    border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 36px 40px;
+    padding: 32px 36px;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-    /* Left accent stripe */
-    box-shadow: inset 3px 0 0 var(--ac);
 }
 
-/* Subtle corner bracket decoration */
-#question-box::before,
-#question-box::after {
-    content: "";
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-color: var(--border);
-    border-style: solid;
-}
-
-#question-box::before {
-    top: 10px; right: 10px;
-    border-width: 1px 1px 0 0;
-}
-
-#question-box::after {
-    bottom: 10px; left: 10px;
-    border-width: 0 0 1px 1px;
-}
-
-#question-text {
+/* Conversion label (e.g. "BIN → DEC") */
+.q-label {
+    display: block;
     font-family: var(--mono);
-    font-size: clamp(1rem, 2.2vw, 1.45rem);
-    font-weight: 500;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--tx-2);
+    margin-bottom: 10px;
+}
+
+/* The value to convert — big and prominent */
+.q-value {
+    font-family: var(--mono);
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    font-weight: 600;
     color: var(--tx-0);
-    letter-spacing: -0.01em;
-    line-height: 1.6;
+    letter-spacing: 0.06em;
     word-break: break-all;
 }
 
-/* ── Answer input ──────────────────────────────────────── */
+/* ── Answer input ───────────────────────────────────── */
 #answer-input {
     width: 100%;
     padding: 14px 18px;
@@ -201,15 +190,11 @@ header h2 {
     caret-color: var(--ac);
     transition: border-color .18s, box-shadow .18s;
 }
-
-#answer-input:focus {
-    border-color: var(--ac);
-    box-shadow: 0 0 0 3px var(--ac-dim);
-}
-
+#answer-input:focus { border-color: var(--ac); box-shadow: 0 0 0 3px var(--ac-dim); }
 #answer-input::placeholder { color: var(--tx-2); }
+#answer-input:disabled { opacity: 0.5; }
 
-/* ── Submit button ─────────────────────────────────────── */
+/* ── Submit button ──────────────────────────────────── */
 #btn-submit {
     width: 100%;
     padding: 13px;
@@ -224,101 +209,66 @@ header h2 {
     cursor: pointer;
     transition: background .18s, transform .13s;
 }
-
 #btn-submit:hover  { background: var(--ac-lt); transform: translateY(-1px); }
 #btn-submit:active { transform: scale(.98); }
+#btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* ── Feedback flash ────────────────────────────────────── */
+/* ── Feedback ───────────────────────────────────────── */
 .feedback {
-    min-height: 24px;
+    min-height: 22px;
     font-family: var(--mono);
     font-size: 0.85rem;
     font-weight: 600;
     text-align: center;
     letter-spacing: 0.02em;
-    transition: opacity .15s;
 }
+.feedback.ok    { color: var(--green); animation: pop .2s ease-out; }
+.feedback.wrong { color: var(--red);   animation: pop .2s ease-out; }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.feedback.ok    { color: var(--green); animation: pop-in .2s ease-out; }
-.feedback.wrong { color: var(--red);   animation: pop-in .2s ease-out; }
-
-@keyframes pop-in {
-    from { transform: scale(.85); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
-}
-
-/* ── Score bar ─────────────────────────────────────────── */
+/* ── Score bar ──────────────────────────────────────── */
 #score-bar {
     font-family: var(--mono);
     font-size: 0.75rem;
     color: var(--tx-2);
-    letter-spacing: 0.08em;
-    display: flex;
-    gap: 20px;
-    align-items: center;
+    letter-spacing: 0.06em;
 }
+#score-correct { color: var(--green); font-weight: 600; }
+#score-wrong   { color: var(--red);   font-weight: 600; }
 
-#score-correct { color: var(--green); font-size: 1rem; font-weight: 600; margin-left: 4px; }
-#score-wrong   { color: var(--red);   font-size: 1rem; font-weight: 600; margin-left: 4px; }
-
-/* ── Game-over overlay ─────────────────────────────────── */
+/* ── Game-over overlay ──────────────────────────────── */
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(9,9,12,.88);
+    background: rgba(9,8,10,.88);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 200;
-    backdrop-filter: blur(3px);
-    animation: fade-in .25s ease-out;
+    backdrop-filter: blur(4px);
+    animation: fade .25s ease-out;
 }
-
 .overlay.hidden { display: none; }
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
 .overlay-box {
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 40px 44px;
-    width: min(420px, 90vw);
+    width: min(400px, 90vw);
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 10px;
     box-shadow: 0 40px 100px rgba(0,0,0,.7);
-    animation: slide-up .3s cubic-bezier(.16,1,.3,1);
+    animation: slide .3s cubic-bezier(.16,1,.3,1);
 }
+@keyframes slide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-@keyframes slide-up {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-
-.overlay-box h2 {
-    font-family: var(--mono);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--tx-0);
-    margin-bottom: 8px;
-}
-
-.overlay-box p {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--tx-1);
-}
-
-.overlay-box strong {
-    color: var(--ac);
-    font-size: 1.3rem;
-    font-weight: 700;
-}
+.overlay-box h2 { font-family: var(--mono); font-size: 1.1rem; color: var(--tx-0); margin-bottom: 6px; }
+.overlay-box p  { font-family: var(--mono); font-size: 0.85rem; color: var(--tx-1); }
+.overlay-box strong { color: var(--ac); font-size: 1.3rem; font-weight: 700; }
 
 .overlay-box button {
     width: 100%;
@@ -331,27 +281,31 @@ header h2 {
     cursor: pointer;
     transition: background .18s, transform .13s;
 }
-
-/* "Back to menu" — ghost */
 .overlay-box button:first-of-type {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--tx-1);
 }
+.overlay-box button:first-of-type:hover { border-color: var(--ac); color: var(--ac); }
+.overlay-box button:last-of-type  { background: var(--ac); border: none; color: var(--bg-1); }
+.overlay-box button:last-of-type:hover { background: var(--ac-lt); transform: translateY(-1px); }
+/* ── Seam closure ───────────────────────────────────────── */
 
-.overlay-box button:first-of-type:hover {
-    border-color: var(--ac);
-    color: var(--ac);
+::selection { background: var(--ac); color: var(--bg-1); }
+
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(61,54,64,.9); }
+
+:focus-visible { outline: 2px solid var(--ac); outline-offset: 3px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* Question text — non-selectable during gameplay.
+   Prevents accidental drag-select while typing an answer. */
+.q-label, .q-value {
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-/* "Play again" — filled */
-.overlay-box button:last-of-type {
-    background: var(--ac);
-    border: 1px solid transparent;
-    color: var(--bg-1);
-}
-
-.overlay-box button:last-of-type:hover {
-    background: var(--ac-lt);
-    transform: translateY(-1px);
-}
+#question-box { cursor: default; }
