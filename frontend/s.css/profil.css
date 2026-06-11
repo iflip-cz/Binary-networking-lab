@@ -9,7 +9,6 @@
     --border: #252a38;
 
     --ac:        #f97316;
-    --ac-lt:     #fb923c;
     --ac-dim:    rgba(249,115,22,.09);
     --ac-border: rgba(249,115,22,.20);
 
@@ -64,11 +63,7 @@ header {
 }
 .back-link:hover { color: var(--tx-0); }
 
-.header-hint {
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    color: var(--tx-2);
-}
+.header-hint { font-family: var(--sans); font-size: 0.78rem; color: var(--tx-2); }
 .prompt { font-family: var(--mono); color: var(--ac); margin-right: 5px; opacity: 0.5; }
 
 /* ── Main layout ────────────────────────────────────── */
@@ -83,7 +78,6 @@ main {
     width: 100%;
 }
 
-/* Section headings — sans, clear */
 h2 {
     font-family: var(--sans);
     font-size: 0.8rem;
@@ -91,7 +85,7 @@ h2 {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--tx-1);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -105,17 +99,25 @@ h2 {
     border: 1px solid var(--border);
     padding: 1px 8px;
     border-radius: 99px;
+    font-weight: 400;
 }
 
-/* ── Hero ───────────────────────────────────────────── */
-.hero {
+/* ── Hero card — single element, two zones ──────────── */
+/* No negative margins. Top half is identity+scores,
+   bottom half is supporting stats. One background,
+   split by a border-top.                              */
+.hero-card {
+    background: var(--bg-2);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.hero-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 32px;
     padding: 36px 40px;
-    background: var(--bg-2);
-    border-radius: 16px;
     flex-wrap: wrap;
 }
 
@@ -123,17 +125,17 @@ h2 {
     display: flex;
     align-items: center;
     gap: 20px;
+    min-width: 0;
 }
 
-/* Avatar circle */
 .pfp {
-    width: 68px;
-    height: 68px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: var(--ac);
     color: var(--bg-1);
     font-family: var(--mono);
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -142,8 +144,9 @@ h2 {
     user-select: none;
 }
 
-/* Username — sans, large, dominant */
-.hero-identity h1 {
+.hero-text { min-width: 0; }
+
+.hero-text h1 {
     font-family: var(--sans);
     font-size: 1.5rem;
     font-weight: 700;
@@ -151,6 +154,11 @@ h2 {
     letter-spacing: -0.02em;
     line-height: 1.1;
     margin-bottom: 4px;
+    /* Prevent long usernames breaking layout */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
 }
 
 .real-name {
@@ -159,11 +167,14 @@ h2 {
     margin-bottom: 2px;
 }
 
-/* Email — mono because it's a data identifier */
 .email {
     font-family: var(--mono);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--tx-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 260px;
 }
 
 .role-tag {
@@ -179,31 +190,29 @@ h2 {
     color: var(--ac);
 }
 
-/* The two headline numbers */
-.hero-stats {
+.hero-scores {
     display: flex;
     align-items: center;
-    gap: 40px;
+    gap: 36px;
+    flex-shrink: 0;
 }
 
 .big-stat { text-align: center; }
 
-/* Score numbers — mono, they're data */
 .bsv {
     display: block;
     font-family: var(--mono);
-    font-size: 3.2rem;
+    font-size: 3rem;
     font-weight: 600;
     color: var(--ac);
     letter-spacing: -0.06em;
     line-height: 1;
 }
 
-/* Stat labels — sans, supportive */
 .bsl {
     display: block;
     font-family: var(--sans);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--tx-2);
     text-transform: uppercase;
@@ -213,38 +222,31 @@ h2 {
 
 .stat-divider {
     width: 1px;
-    height: 52px;
+    height: 48px;
     background: var(--border);
     flex-shrink: 0;
 }
 
-/* ── Supporting stats ───────────────────────────────── */
-/* Attached visually to the hero — same background, a clear step down */
-.support-stats {
+/* Bottom strip — attached directly, no gaps, no tricks */
+.hero-bottom {
     display: flex;
-    gap: 0;
-    background: var(--bg-2);
-    border-radius: 0 0 16px 16px;
     border-top: 1px solid var(--border);
-    margin-top: -48px;
-    padding: 0 40px;
-    overflow: hidden;
 }
 
 .ss {
     flex: 1;
-    padding: 18px 0;
+    padding: 18px 24px;
     display: flex;
     flex-direction: column;
     gap: 4px;
     border-right: 1px solid var(--border);
+    min-width: 0;
 }
 .ss:last-child { border-right: none; }
 
-/* Smaller numbers — mono, still data */
 .ssv {
     font-family: var(--mono);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: var(--tx-0);
     letter-spacing: -0.03em;
@@ -253,16 +255,19 @@ h2 {
 
 .ssl {
     font-family: var(--sans);
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     color: var(--tx-2);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ── Achievement badges ─────────────────────────────── */
+/* ── Achievements ───────────────────────────────────── */
 .badge-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 10px;
 }
 
@@ -276,80 +281,105 @@ h2 {
     border-left: 3px solid var(--border);
 }
 
-/* Badge name — sans, readable */
 .badge strong {
     font-family: var(--sans);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
     color: var(--tx-0);
 }
 
-/* Rarity label — mono, it's a classification code */
 .badge span {
     font-family: var(--mono);
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     letter-spacing: 0.1em;
-    text-transform: lowercase;
     color: var(--tx-2);
 }
 
-.rarity-rare      { border-color: rgba(96,165,250,.4); }
-.rarity-rare      span { color: #60a5fa; }
+.rarity-rare      { border-color: rgba(96,165,250,.45); }
+.rarity-rare      span   { color: #60a5fa; }
 .rarity-rare      strong { color: #bfdbfe; }
 
-.rarity-epic      { border-color: rgba(167,139,250,.4); }
-.rarity-epic      span { color: #a78bfa; }
+.rarity-epic      { border-color: rgba(167,139,250,.45); }
+.rarity-epic      span   { color: #a78bfa; }
 .rarity-epic      strong { color: #ddd6fe; }
 
-.rarity-legendary { border-color: rgba(251,191,36,.5); background: rgba(251,191,36,.04); }
+.rarity-legendary {
+    border-color: rgba(251,191,36,.55);
+    background: rgba(251,191,36,.04);
+}
 .rarity-legendary span   { color: var(--gold); }
 .rarity-legendary strong { color: var(--gold); }
 
 /* ── History ────────────────────────────────────────── */
 .history {
-    display: flex;
-    flex-direction: column;
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
 }
 
-.h-row {
+/* Column header row */
+.h-head {
     display: grid;
-    /* date | mode | correct | wrong | streak */
-    grid-template-columns: 110px 1fr 60px 60px 70px;
-    align-items: center;
-    padding: 14px 20px;
-    border-bottom: 1px solid rgba(37,42,56,.5);
-    transition: background .12s;
+    grid-template-columns: 110px 1fr 80px 80px 80px;
+    padding: 10px 20px;
+    background: var(--bg-3);
+    border-bottom: 1px solid var(--border);
     gap: 8px;
 }
 
+.h-head span {
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--tx-2);
+}
+
+.h-head span:nth-child(3),
+.h-head span:nth-child(4),
+.h-head span:nth-child(5) { text-align: right; }
+
+/* Data rows */
+.h-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 80px 80px 80px;
+    align-items: center;
+    padding: 13px 20px;
+    border-bottom: 1px solid rgba(37,42,56,.4);
+    gap: 8px;
+    transition: background .12s;
+}
 .h-row:last-child { border-bottom: none; }
 .h-row:hover { background: var(--bg-2); }
 
-/* Date — mono, it's a timestamp */
 .h-date {
     font-family: var(--mono);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--tx-2);
-    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
-/* Mode name — sans, readable label */
 .h-mode {
     font-family: var(--sans);
     font-size: 0.82rem;
     color: var(--tx-1);
 }
 
-/* Stats — mono, data */
-.h-correct { font-family: var(--mono); font-size: 0.8rem; color: var(--green); font-weight: 600; text-align: right; }
-.h-wrong   { font-family: var(--mono); font-size: 0.8rem; color: var(--red);   font-weight: 600; text-align: right; }
-.h-streak  { font-family: var(--mono); font-size: 0.75rem; color: var(--gold); text-align: right; }
-.h-streak-empty { display: block; }
+.h-correct,
+.h-wrong,
+.h-streak {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+}
 
-/* ── Empty states ───────────────────────────────────── */
+.h-correct { color: var(--green); }
+.h-wrong   { color: var(--red); }
+.h-streak  { color: var(--gold); }
+
+/* ── Empty state ────────────────────────────────────── */
 .empty {
     font-family: var(--sans);
     font-size: 0.82rem;
