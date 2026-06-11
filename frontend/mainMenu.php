@@ -35,60 +35,33 @@ $initial     = strtoupper(substr($_SESSION["username"], 0, 1));
 
 <main>
 
-    <section class="type-section">
-        <span class="type-label">procvičovat</span>
-        <div class="type-btns">
-            <button class="type-btn active" data-type="all">vše</button>
-            <button class="type-btn" data-type="bin">bin</button>
-            <button class="type-btn" data-type="hex">hex</button>
-            <button class="type-btn" data-type="oct">oct</button>
-        </div>
-    </section>
-
     <section class="game-modes">
         <h2>game modes</h2>
         <div class="mode-grid">
 
-            <a href="lesson.php?mode=1&amp;time=30" class="mode-card" data-base="lesson.php?mode=1&time=30">
-                <h3 class="card-name">ICMP Ping</h3>
-                <div class="card-time">30 s</div>
-                <span class="card-cat">Time Attack</span>
-                <p>Rychlostní sprint — co nejvíce správných v 30 vteřinách.</p>
-            </a>
+            <div class="mode-card" data-mode="1" tabindex="0" role="button">
+                <h3 class="card-name">Time Attack</h3>
+                <div class="card-times">30 · 60 · 120 s</div>
+                <p>Odpovídej co nejrychleji v časovém limitu. Každá správná odpověď = bod.</p>
+            </div>
 
-            <a href="lesson.php?mode=1&amp;time=60" class="mode-card" data-base="lesson.php?mode=1&time=60">
-                <h3 class="card-name">TCP Handshake</h3>
-                <div class="card-time">60 s</div>
-                <span class="card-cat">Time Attack</span>
-                <p>Standardní délka — vyvážená obtížnost i čas.</p>
-            </a>
-
-            <a href="lesson.php?mode=1&amp;time=120" class="mode-card" data-base="lesson.php?mode=1&time=120">
-                <h3 class="card-name">Packet Flood</h3>
-                <div class="card-time">120 s</div>
-                <span class="card-cat">Time Attack</span>
-                <p>Maratonský výkon — překonej sám sebe.</p>
-            </a>
-
-            <a href="lesson.php?mode=3" class="mode-card" data-base="lesson.php?mode=3">
+            <div class="mode-card" data-mode="3" tabindex="0" role="button">
                 <h3 class="card-name">Streak Challenge</h3>
-                <div class="card-time">∞</div>
-                <span class="card-cat">Streak mód</span>
-                <p>Jedna chyba resetuje streak. Hra pokračuje dál.</p>
-            </a>
+                <div class="card-times">∞</div>
+                <p>Buduj co nejdelší sérii. Chyba streak resetuje — hra ale pokračuje.</p>
+            </div>
 
-            <a href="lesson.php?mode=2" class="mode-card mode-card--free" data-base="lesson.php?mode=2">
+            <div class="mode-card mode-card--free" data-mode="2" tabindex="0" role="button">
                 <h3 class="card-name">Training Lab</h3>
-                <div class="card-time">∞</div>
-                <span class="card-cat">Volná hra</span>
-                <p>Žádné limity. Po chybě uvidíš správnou odpověď.</p>
-            </a>
+                <div class="card-times">∞</div>
+                <p>Volné procvičování bez omezení. Po chybě uvidíš správnou odpověď.</p>
+            </div>
 
         </div>
     </section>
 
     <section class="leaderboard">
-        <h2>leaderboard — time attack</h2>
+        <h2>leaderboard</h2>
         <?php if (count($leaderboard) > 0): ?>
         <table>
             <thead>
@@ -121,29 +94,108 @@ $initial     = strtoupper(substr($_SESSION["username"], 0, 1));
     <a href="../backend/logout.php">odhlásit se</a>
 </footer>
 
+<!-- ── Game config modal ──────────────────────────── -->
+<div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal" id="modal-box">
+
+        <button class="modal-close" id="modal-close" aria-label="Zavřít">✕</button>
+
+        <h3 id="modal-title">Time Attack</h3>
+        <p id="modal-desc" class="modal-desc">Popis módu.</p>
+
+        <!-- Time picker — only for Time Attack (mode 1) -->
+        <div class="cfg-group" id="time-group">
+            <span class="cfg-label">čas</span>
+            <div class="cfg-row" id="time-btns">
+                <button class="cfg-btn" data-time="30">30 s</button>
+                <button class="cfg-btn active" data-time="60">60 s</button>
+                <button class="cfg-btn" data-time="120">120 s</button>
+            </div>
+        </div>
+
+        <!-- System picker — all modes -->
+        <div class="cfg-group">
+            <span class="cfg-label">soustava</span>
+            <div class="cfg-row" id="stype-btns">
+                <button class="cfg-btn active" data-stype="all">vše</button>
+                <button class="cfg-btn" data-stype="bin">bin</button>
+                <button class="cfg-btn" data-stype="hex">hex</button>
+                <button class="cfg-btn" data-stype="oct">oct</button>
+            </div>
+        </div>
+
+        <button class="modal-play" id="modal-play">Hrát →</button>
+    </div>
+</div>
+
 <script>
-const typeBtns  = document.querySelectorAll('.type-btn');
-const modeCards = document.querySelectorAll('.mode-card');
+const MODES = {
+    1: { title: "Time Attack",      desc: "Odpovídej co nejrychleji. Jedno správné = jeden bod. Čas vyprší — hra skončí.",  showTime: true  },
+    2: { title: "Training Lab",     desc: "Žádné limity. Po každé chybě uvidíš správnou odpověď — procvičuj v klidu.",     showTime: false },
+    3: { title: "Streak Challenge", desc: "Odpovídej správně a buduj streak. Chyba ho resetuje — ale hra pokračuje dál.", showTime: false },
+};
 
-let selectedType = sessionStorage.getItem('trainType') || 'all';
-applyType(selectedType);
-typeBtns.forEach(b => b.classList.toggle('active', b.dataset.type === selectedType));
+let currentMode  = 1;
+let selectedTime  = parseInt(sessionStorage.getItem('lastTime')  || '60');
+let selectedStype = sessionStorage.getItem('trainType') || 'all';
 
-typeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        typeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedType = btn.dataset.type;
-        sessionStorage.setItem('trainType', selectedType);
-        applyType(selectedType);
-    });
+const overlay    = document.getElementById('modal-overlay');
+const timeBtns   = document.querySelectorAll('#time-btns  .cfg-btn');
+const stypeBtns  = document.querySelectorAll('#stype-btns .cfg-btn');
+
+// Restore saved state
+setActive(timeBtns,  String(selectedTime),  'data-time');
+setActive(stypeBtns, selectedStype,          'data-stype');
+
+// Open modal on card click or Enter key
+document.querySelectorAll('.mode-card').forEach(card => {
+    card.addEventListener('click',   () => open(parseInt(card.dataset.mode)));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(parseInt(card.dataset.mode)); });
 });
 
-function applyType(type) {
-    modeCards.forEach(card => {
-        const base = card.dataset.base;
-        card.href = base + (base.includes('?') ? '&' : '?') + 'type=' + type;
-    });
+function open(mode) {
+    currentMode = mode;
+    const cfg = MODES[mode];
+    document.getElementById('modal-title').textContent = cfg.title;
+    document.getElementById('modal-desc').textContent  = cfg.desc;
+    document.getElementById('time-group').style.display = cfg.showTime ? '' : 'none';
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modal-play').focus();
+}
+
+function close() {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', close);
+overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+// Time selection
+timeBtns.forEach(btn => btn.addEventListener('click', () => {
+    setActive(timeBtns, btn.dataset.time, 'data-time');
+    selectedTime = parseInt(btn.dataset.time);
+    sessionStorage.setItem('lastTime', selectedTime);
+}));
+
+// Stype selection
+stypeBtns.forEach(btn => btn.addEventListener('click', () => {
+    setActive(stypeBtns, btn.dataset.stype, 'data-stype');
+    selectedStype = btn.dataset.stype;
+    sessionStorage.setItem('trainType', selectedStype);
+}));
+
+// Play
+document.getElementById('modal-play').addEventListener('click', () => {
+    let url = `lesson.php?mode=${currentMode}&type=${selectedStype}`;
+    if (currentMode === 1) url += `&time=${selectedTime}`;
+    window.location.href = url;
+});
+
+function setActive(btns, val, attr) {
+    btns.forEach(b => b.classList.toggle('active', b.getAttribute(attr) === val));
 }
 </script>
 
