@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root, [data-theme="dark"] {
+    --bg-1: #0d0f14; --bg-2: #131720; --bg-3: #1a1e2b; --border: #252a38;
+    --ac: #f97316; --ac-lt: #fb923c; --ac-dim: rgba(249,115,22,.09); --ac-border: rgba(249,115,22,.20);
+    --tx-0: #e8eaf2; --tx-1: #8890a8; --tx-2: #4a5068;
+    --red: #f87171; --green: #34d399; --gold: #fbbf24; --silver: #94a3b8; --bronze: #cd8b4a;
+    --sans: "Outfit", system-ui, sans-serif;
+    --mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    --r: 10px;
+}
+[data-theme="light"] {
+    --bg-1: #f2f0eb; --bg-2: #ffffff; --bg-3: #eae7e0; --border: #d8d4cc;
+    --ac: #ea6a0a; --ac-lt: #f97316; --ac-dim: rgba(234,106,10,.10); --ac-border: rgba(234,106,10,.25);
+    --tx-0: #1c1a16; --tx-1: #6b6458; --tx-2: #9e9080;
+    --red: #dc2626; --green: #16a34a; --gold: #b45309;
+}
+
+::selection { background: var(--ac); color: var(--bg-1); }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+:focus-visible { outline: 2px solid var(--ac); outline-offset: 3px; }
+:focus:not(:focus-visible) { outline: none; }
+
+body {
+    font-family: var(--sans);
+    background: var(--bg-1);
+    color: var(--tx-0);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    transition: background .25s, color .25s;
+}
+
+header {
+    position: sticky; top: 0; z-index: 100;
+    height: 54px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    gap: 16px;
+}
+
+.back-link { font-family: var(--sans); font-size: 0.82rem; color: var(--tx-1); text-decoration: none; transition: color .15s; }
+.back-link:hover { color: var(--tx-0); }
+
+.header-title { font-family: var(--sans); font-size: 0.88rem; font-weight: 600; color: var(--tx-0); }
+.prompt { font-family: var(--mono); color: var(--ac); margin-right: 6px; opacity: 0.5; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+.theme-btn {
+    font-family: var(--mono); font-size: 0.65rem; color: var(--tx-2);
+    background: transparent; border: 1px solid var(--border);
+    padding: 4px 8px; border-radius: 5px; cursor: pointer; letter-spacing: 0.04em;
+    transition: color .15s, border-color .15s;
+}
+.theme-btn:hover { color: var(--ac); border-color: var(--ac-border); }
+
+/* The invite code badge shown to teacher */
+.class-code-badge {
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 0.18em; color: var(--ac);
+    background: var(--ac-dim); border: 1px solid var(--ac-border);
+    padding: 4px 12px; border-radius: 6px;
+}
+
+.leave-btn {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--tx-2);
+    background: transparent; border: 1px solid var(--border);
+    padding: 5px 10px; border-radius: 6px; cursor: pointer; letter-spacing: 0.04em;
+    transition: color .15s, border-color .15s;
+}
+.leave-btn:hover { color: var(--red); border-color: rgba(220,38,38,.3); }
+
+main {
+    flex-grow: 1; max-width: 1000px; margin: 0 auto;
+    padding: 44px 32px 72px; width: 100%;
+    display: flex; flex-direction: column; gap: 52px;
+}
+
+h2 {
+    font-family: var(--sans); font-size: 0.8rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--tx-1); margin-bottom: 18px;
+}
+
+/* ── Leaderboard tabs ───────────────────────────────── */
+.lb-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.lb-header h2 { margin-bottom: 0; }
+
+.lb-tabs { display: flex; gap: 4px; }
+
+.lb-tab {
+    font-family: var(--sans); font-size: 0.78rem; font-weight: 500;
+    color: var(--tx-2); background: transparent;
+    border: 1px solid var(--border); padding: 6px 14px; border-radius: 7px;
+    cursor: pointer; transition: all .17s;
+}
+.lb-tab:hover { color: var(--tx-0); border-color: var(--border); background: var(--bg-3); }
+.lb-tab.active { color: var(--ac); border-color: var(--ac-border); background: var(--ac-dim); }
+
+.lb-table-wrap { animation: fade-in .2s ease; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+table { width: 100%; border-collapse: collapse; }
+
+table th {
+    font-family: var(--sans); font-size: 0.72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--tx-2); padding: 10px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+table td {
+    padding: 13px 16px; border-bottom: 1px solid rgba(37,42,56,.4);
+    color: var(--tx-1); font-size: 0.85rem; transition: background .12s;
+}
+
+table tr:last-child td { border-bottom: none; }
+table tr:hover td { background: var(--bg-2); }
+
+table th:first-child, table td:first-child { width: 44px; text-align: center; }
+table th:last-child,  table td:last-child  { text-align: right; }
+
+table tbody tr:nth-child(1) td:first-child { color: var(--gold);   font-weight: 700; font-family: var(--mono); }
+table tbody tr:nth-child(2) td:first-child { color: var(--silver); font-weight: 700; font-family: var(--mono); }
+table tbody tr:nth-child(3) td:first-child { color: var(--bronze); font-weight: 700; font-family: var(--mono); }
+
+table td:nth-child(2) { font-family: var(--sans); font-weight: 500; color: var(--tx-0); }
+table td:last-child   { font-family: var(--mono); font-weight: 700; color: var(--ac); }
+
+tr.highlight td { background: var(--ac-dim) !important; }
+
+.empty-state { font-family: var(--sans); font-size: 0.82rem; color: var(--tx-2); padding: 24px 0; }
+
+/* ── Teacher members table ──────────────────────────── */
+.members-table-wrap { overflow-x: auto; }
+
+.members-table td, .members-table th { white-space: nowrap; }
+.members-table td:last-child { text-align: left; }
+.members-table th:last-child { text-align: left; }
+
+.mono { font-family: var(--mono); font-size: 0.8rem; }
+.num  { text-align: right; }
+.num.ok { color: var(--green); font-weight: 600; }
+
+.rm-btn {
+    font-family: var(--mono); font-size: 0.65rem; color: var(--tx-2);
+    background: transparent; border: 1px solid var(--border);
+    padding: 4px 8px; border-radius: 5px; cursor: pointer; letter-spacing: 0.06em;
+    transition: color .15s, border-color .15s;
+}
+.rm-btn:hover { color: var(--red); border-color: rgba(220,38,38,.3); }
+
+.page-footer {
+    border-top: 1px solid var(--border); padding: 18px 32px;
+    font-family: var(--sans); font-size: 0.72rem; color: var(--tx-2);
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.page-footer a { color: var(--tx-2); text-decoration: none; transition: color .14s; }
+.page-footer a:hover { color: var(--ac); }
+.page-footer .sep { opacity: 0.3; }

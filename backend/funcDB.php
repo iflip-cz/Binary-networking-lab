@@ -220,3 +220,147 @@ function require_field($value, $message) {
     }
     return $value;
 }
+function generateClassCode($pdo) {
+    do {
+        $code = strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
+        $check = $pdo->prepare("SELECT 1 FROM classes WHERE code = ?");
+        $check->execute([$code]);
+    } while ($check->rowCount() > 0);
+    return $code;
+}
+function createClass($pdo, $id_teacher, $name) {
+    $code = generateClassCode($pdo);
+    $stmt = $pdo->prepare("
+        INSERT INTO classes (name, code, ID_teacher, created_at)
+        VALUES (?, ?, ?, CURDATE())
+    ");
+    $stmt->execute([$name, $code, $id_teacher]);
+    return ['id' => (int)$pdo->lastInsertId(), 'code' => $code];
+}
+function deleteClass($pdo, $id_class, $id_teacher) {
+    $stmt = $pdo->prepare("DELETE FROM classes WHERE ID_class = ? AND ID_teacher = ?");
+    return $stmt->execute([$id_class, $id_teacher]);
+}
+/**
+ * Join a class by code. Returns:
+ *   int   → success (class id)
+ *   'not_found'      → code doesn't exist
+ *   'already_member' → already in this class
+ *   'is_teacher'     → user is the teacher of this class
+ */
+function joinClassByCode($pdo, $code, $id_user) {
+    $stmt = $pdo->prepare("SELECT * FROM classes WHERE code = ?");
+    $stmt->execute([strtoupper(trim($code))]);
+    $class = $stmt->fetch();
+    if (!$class) return 'not_found';
+
+    if ((int)$class['ID_teacher'] === (int)$id_user) return 'is_teacher';
+
+    $check = $pdo->prepare("SELECT 1 FROM class_members WHERE ID_class = ? AND ID_user = ?");
+    $check->execute([$class['ID_class'], $id_user]);
+    if ($check->rowCount() > 0) return 'already_member';
+
+    $ins = $pdo->prepare("INSERT INTO class_members (ID_class, ID_user) VALUES (?, ?)");
+    $ins->execute([$class['ID_class'], $id_user]);
+    return (int)$class['ID_class'];
+}
+
+/** Leave a class (student removes themselves). */
+function leaveClass($pdo, $id_class, $id_user) {
+    $stmt = $pdo->prepare("DELETE FROM class_members WHERE ID_class = ? AND ID_user = ?");
+    return $stmt->execute([$id_class, $id_user]);
+}
+
+/** Remove any student from a class (teacher action). */
+function removeFromClass($pdo, $id_class, $id_user, $id_teacher) {
+    // Verify caller is actually the teacher of this class
+    $chk = $pdo->prepare("SELECT 1 FROM classes WHERE ID_class = ? AND ID_teacher = ?");
+    $chk->execute([$id_class, $id_teacher]);
+    if (!$chk->rowCount()) return false;
+
+    $stmt = $pdo->prepare("DELETE FROM class_members WHERE ID_class = ? AND ID_user = ?");
+    return $stmt->execute([$id_class, $id_user]);
+}
+
+/** All classes a teacher owns. */
+function getTeacherClasses($pdo, $id_teacher) {
+    $stmt = $pdo->prepare("
+        SELECT c.*, COUNT(cm.ID_user) AS member_count
+        FROM classes c
+        LEFT JOIN class_members cm ON c.ID_class = cm.ID_class
+        WHERE c.ID_teacher = ?
+        GROUP BY c.ID_class
+        ORDER BY c.created_at DESC
+    ");
+    $stmt->execute([$id_teacher]);
+    return $stmt->fetchAll();
+}
+
+/** All classes a student has joined. */
+function getStudentClasses($pdo, $id_user) {
+    $stmt = $pdo->prepare("
+        SELECT c.*, u.username AS teacher_name
+        FROM classes c
+        JOIN class_members cm ON c.ID_class = cm.ID_class
+        JOIN user u           ON c.ID_teacher = u.ID_user
+        WHERE cm.ID_user = ?
+        ORDER BY c.name
+    ");
+    $stmt->execute([$id_user]);
+    return $stmt->fetchAll();
+}
+
+/** One class row (no permission check — caller must verify). */
+function getClassById($pdo, $id_class) {
+    $stmt = $pdo->prepare("SELECT * FROM classes WHERE ID_class = ?");
+    $stmt->execute([$id_class]);
+    return $stmt->fetch();
+}
+
+/**
+ * Class leaderboard.
+ * $type: 'time_attack' | 'streak' | 'total_correct'
+ */
+function getClassLeaderboard($pdo, $id_class, $type = 'time_attack', $limit = 30) {
+    $col = match($type) {
+        'streak'        => 'u.highscore_2gm',
+        'total_correct' => 'u.Q_correct',
+        default         => 'u.highscore_1gm',
+    };
+
+    $stmt = $pdo->prepare("
+        SELECT u.username, u.anonym, u.highscore_1gm, u.highscore_2gm,
+               u.Q_correct, u.Q_answerd,
+               $col AS score
+        FROM class_members cm
+        JOIN user u ON cm.ID_user = u.ID_user
+        WHERE cm.ID_class = :cid
+        ORDER BY $col DESC
+        LIMIT :lim
+    ");
+    $stmt->bindValue(':cid', (int)$id_class, PDO::PARAM_INT);
+    $stmt->bindValue(':lim', (int)$limit,    PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+/** All members with full stats — for the teacher's view. */
+function getClassMembersDetailed($pdo, $id_class) {
+    $stmt = $pdo->prepare("
+        SELECT u.ID_user, u.username, u.name, u.surname,
+               u.highscore_1gm, u.highscore_2gm,
+               u.Q_answerd, u.Q_correct,
+               ROUND(
+                 CASE WHEN u.Q_answerd > 0
+                      THEN u.Q_correct / u.Q_answerd * 100
+                      ELSE 0 END, 1
+               ) AS accuracy
+        FROM class_members cm
+        JOIN user u ON cm.ID_user = u.ID_user
+        WHERE cm.ID_class = :cid
+        ORDER BY u.highscore_1gm DESC
+    ");
+    $stmt->bindValue(':cid', (int)$id_class, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}

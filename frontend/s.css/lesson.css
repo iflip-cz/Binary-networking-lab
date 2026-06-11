@@ -2,7 +2,8 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
+/* ── Dark theme (default) ───────────────────────────── */
+:root, [data-theme="dark"] {
     --bg-1:   #0d0f14;
     --bg-2:   #131720;
     --bg-3:   #1a1e2b;
@@ -21,9 +22,34 @@
     --green: #34d399;
     --gold:  #fbbf24;
 
-    --sans: "Outfit",        system-ui, sans-serif;
-    --mono: "JetBrains Mono","Fira Code", Consolas, monospace;
-    --r: 10px;
+    --exp-bg:     #1a1e2b;
+    --exp-border: #2e3448;
+    --exp-bit-active: rgba(249,115,22,.15);
+}
+
+/* ── Light theme ────────────────────────────────────── */
+[data-theme="light"] {
+    --bg-1:   #f2f0eb;
+    --bg-2:   #ffffff;
+    --bg-3:   #eae7e0;
+    --border: #d8d4cc;
+
+    --ac:        #ea6a0a;
+    --ac-lt:     #f97316;
+    --ac-dim:    rgba(234,106,10,.10);
+    --ac-border: rgba(234,106,10,.25);
+
+    --tx-0: #1c1a16;
+    --tx-1: #6b6458;
+    --tx-2: #9e9080;
+
+    --red:   #dc2626;
+    --green: #16a34a;
+    --gold:  #b45309;
+
+    --exp-bg:     #f8f6f0;
+    --exp-border: #ddd8cf;
+    --exp-bit-active: rgba(234,106,10,.12);
 }
 
 ::selection { background: var(--ac); color: var(--bg-1); }
@@ -36,15 +62,16 @@
 html, body { height: 100%; overflow: hidden; }
 
 body {
-    font-family: var(--sans);
+    font-family: var(--sans, "Outfit", system-ui, sans-serif);
     background: var(--bg-1);
     color: var(--tx-0);
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
+    transition: background .25s, color .25s;
 }
 
-/* ── Header bar ─────────────────────────────────────── */
+/* ── Header ─────────────────────────────────────────── */
 header {
     height: 52px;
     flex-shrink: 0;
@@ -52,13 +79,12 @@ header {
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    gap: 16px;
+    padding: 0 20px;
+    gap: 12px;
 }
 
 #btn-back {
-    font-family: var(--sans);
+    font-family: "Outfit", sans-serif;
     font-size: 0.8rem;
     color: var(--tx-1);
     text-decoration: none;
@@ -68,80 +94,75 @@ header {
 #btn-back:hover { color: var(--tx-0); }
 
 header h2 {
-    font-family: var(--sans);
+    font-family: "Outfit", sans-serif;
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--tx-1);
-    text-align: center;
     flex-grow: 1;
+    text-align: center;
 }
 
-/* ── Timer ──────────────────────────────────────────── */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.theme-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.65rem;
+    color: var(--tx-2);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: color .15s, border-color .15s;
+}
+.theme-btn:hover { color: var(--ac); border-color: var(--ac-border); }
+
 .timer {
-    font-family: var(--mono);
-    font-size: 1.7rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.6rem;
     font-weight: 600;
     color: var(--tx-0);
     letter-spacing: -0.04em;
-    min-width: 56px;
+    min-width: 48px;
     text-align: right;
-    flex-shrink: 0;
     transition: color .3s;
 }
 .timer--warn { color: var(--gold); }
-.timer--crit {
-    color: var(--red);
-    animation: pulse .55s ease-in-out infinite alternate;
-}
-@keyframes pulse { from { opacity: 1; } to { opacity: .45; } }
+.timer--crit { color: var(--red); animation: pulse .55s ease-in-out infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .4; } }
 
-/* ── Streak HUD — no emoji, pure CSS + color ────────── */
-.streak-hud {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    flex-shrink: 0;
-}
+.streak-hud { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 
-/* The big streak number IS the emphasis — orange does the work */
-#streak-count.streak-now {
-    font-family: var(--mono);
-    font-size: 1.6rem;
+#streak-count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--ac);
     letter-spacing: -0.04em;
     line-height: 1;
 }
 
-.streak-best {
-    font-family: var(--sans);
-    font-size: 0.62rem;
-    color: var(--tx-2);
-    letter-spacing: 0.04em;
-}
+.streak-best { font-family: "Outfit", sans-serif; font-size: 0.62rem; color: var(--tx-2); }
+.streak-best span { font-family: "JetBrains Mono", monospace; color: var(--tx-1); }
 
-.streak-best span {
-    font-family: var(--mono);
-    color: var(--tx-1);
-    font-size: 0.7rem;
-}
-
-/* ── Stop button ────────────────────────────────────── */
 #btn-stop {
-    font-family: var(--mono);
-    font-size: 0.72rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.7rem;
     color: var(--tx-2);
     background: transparent;
     border: 1px solid var(--border);
-    padding: 5px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
     cursor: pointer;
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
     transition: color .15s, border-color .15s;
 }
-#btn-stop:hover { color: var(--red); border-color: rgba(248,113,113,.3); }
+#btn-stop:hover { color: var(--red); border-color: rgba(220,38,38,.3); }
 
 /* ── Game area ──────────────────────────────────────── */
 #game-area {
@@ -150,9 +171,9 @@ header h2 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    padding: 32px 24px;
-    max-width: 620px;
+    gap: 14px;
+    padding: 28px 24px;
+    max-width: 580px;
     margin: 0 auto;
     width: 100%;
 }
@@ -162,24 +183,24 @@ header h2 {
     width: 100%;
     background: var(--bg-2);
     border-radius: 14px;
-    padding: 32px 36px;
+    padding: 28px 32px;
     text-align: center;
 }
 
 .q-label {
     display: block;
-    font-family: var(--mono);
-    font-size: 0.65rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.18em;
     color: var(--tx-2);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     user-select: none;
 }
 
 .q-value {
-    font-family: var(--mono);
-    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
     font-weight: 600;
     color: var(--tx-0);
     letter-spacing: 0.06em;
@@ -188,163 +209,250 @@ header h2 {
     cursor: default;
 }
 
-/* ── Input ──────────────────────────────────────────── */
-#answer-input {
+/* ── Answer row — input + submit inline ─────────────── */
+.answer-row {
     width: 100%;
-    padding: 14px 18px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+#answer-input {
+    flex-grow: 1;
+    padding: 13px 16px;
     background: var(--bg-3);
     border: 1px solid var(--border);
-    border-radius: var(--r);
-    font-family: var(--mono);
-    font-size: 1.1rem;
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--tx-0);
     text-align: center;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     outline: none;
     caret-color: var(--ac);
     transition: border-color .18s, box-shadow .18s;
+    min-width: 0;
 }
-#answer-input:focus { border-color: var(--ac); box-shadow: 0 0 0 3px var(--ac-dim); }
+
+#answer-input:focus {
+    border-color: var(--ac);
+    box-shadow: -3px 0 0 0 var(--ac-dim), 0 3px 0 0 var(--ac-dim), 0 -3px 0 0 var(--ac-dim);
+    z-index: 1;
+}
+
 #answer-input::placeholder { color: var(--tx-2); }
 #answer-input:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ── Submit ─────────────────────────────────────────── */
+/* Submit — small square attached to input */
 #btn-submit {
-    width: 100%;
-    padding: 13px;
+    width: 48px;
+    flex-shrink: 0;
     background: var(--ac);
     color: var(--bg-1);
-    border: none;
-    border-radius: var(--r);
-    font-family: var(--sans);
-    font-size: 0.9rem;
+    border: 1px solid var(--ac);
+    border-radius: 0 10px 10px 0;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: background .18s, transform .13s;
+    transition: background .17s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-#btn-submit:hover  { background: var(--ac-lt); transform: translateY(-1px); }
-#btn-submit:active { transform: scale(.98); }
+#btn-submit:hover  { background: var(--ac-lt); border-color: var(--ac-lt); }
+#btn-submit:active { transform: scale(.97); }
 #btn-submit:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
 /* ── Feedback ───────────────────────────────────────── */
 .feedback {
     min-height: 20px;
-    font-family: var(--mono);
-    font-size: 0.82rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
     font-weight: 600;
     text-align: center;
     letter-spacing: 0.02em;
 }
-.feedback.ok    { color: var(--green); animation: pop .18s ease-out; }
-.feedback.wrong { color: var(--red);   animation: pop .18s ease-out; }
-@keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+.feedback.ok  { color: var(--green); animation: pop .18s ease-out; }
+.feedback.bad { color: var(--red);   animation: pop .18s ease-out; }
+@keyframes pop { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+
+/* ── Explain section ────────────────────────────────── */
+.explain-wrap {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.explain-wrap.visible { display: flex; }
+
+.btn-explain {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--tx-2);
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-align: left;
+    transition: color .15s;
+    align-self: flex-start;
+}
+.btn-explain:hover { color: var(--ac); }
+
+.explain-panel {
+    display: none;
+    background: var(--exp-bg);
+    border: 1px solid var(--exp-border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    animation: slide-in .2s ease-out;
+}
+
+.explain-panel.open { display: block; }
+
+@keyframes slide-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Content inside explanation */
+.exp-rule {
+    font-family: "Outfit", sans-serif;
+    font-size: 0.78rem;
+    color: var(--tx-1);
+    margin-bottom: 14px;
+}
+
+/* Binary position/bit/value grid */
+.exp-bit-grid {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.exp-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 5px;
+    border-radius: 5px;
+    min-width: 32px;
+    background: var(--bg-3);
+    border: 1px solid var(--exp-border);
+}
+
+.exp-cell.active { background: var(--exp-bit-active); border-color: var(--ac-border); }
+
+.ec-pos { font-family: "JetBrains Mono", monospace; font-size: 0.55rem; color: var(--tx-2); }
+.ec-bit { font-family: "JetBrains Mono", monospace; font-size: 0.9rem; font-weight: 600; color: var(--tx-0); }
+.ec-val { font-family: "JetBrains Mono", monospace; font-size: 0.6rem; color: var(--ac); }
+.exp-cell.active .ec-bit { color: var(--ac); }
+
+/* Division steps */
+.exp-steps { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+
+.exp-step {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: var(--tx-1);
+}
+
+.exp-step .rem { color: var(--ac); font-weight: 600; }
+
+/* Nibble display (bin2hex, hex2bin) */
+.exp-nibbles { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+
+.exp-nib {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--bg-3);
+    border: 1px solid var(--exp-border);
+    border-radius: 7px;
+}
+
+.nb-top { font-family: "JetBrains Mono", monospace; font-size: 0.78rem; color: var(--tx-1); }
+.nb-bot { font-family: "JetBrains Mono", monospace; font-size: 0.78rem; font-weight: 600; color: var(--ac); }
+
+.exp-sum {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+    color: var(--tx-1);
+    padding-top: 10px;
+    border-top: 1px solid var(--exp-border);
+}
+.exp-sum strong { color: var(--ac); font-size: 1rem; }
 
 /* ── Score bar ──────────────────────────────────────── */
 #score-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 0.72rem;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.7rem;
 }
+.sc-lbl { color: var(--tx-2); letter-spacing: 0.06em; }
+.sc-val { font-size: 0.95rem; font-weight: 700; }
+.sc-sep { color: var(--tx-2); }
+.ok  { color: var(--green); }
+.bad { color: var(--red); }
 
-.sc-label { color: var(--tx-2); letter-spacing: 0.06em; }
-.sc-val   { font-size: 1rem; font-weight: 700; }
-.sc-sep   { color: var(--tx-2); }
-.correct  { color: var(--green); }
-.wrong    { color: var(--red); }
-
-/* ── Game-over overlay ──────────────────────────────── */
+/* ── Overlay ────────────────────────────────────────── */
 .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(8,9,14,.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.82);
+    display: flex; align-items: center; justify-content: center;
     z-index: 200;
     backdrop-filter: blur(6px);
-    animation: fade .22s ease;
+    animation: fade .2s ease;
 }
 .overlay.hidden { display: none; }
 @keyframes fade  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slide { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rise  { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .overlay-box {
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 40px;
-    width: min(400px, 90vw);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    box-shadow: 0 40px 80px rgba(0,0,0,.6);
-    animation: slide .28s cubic-bezier(.16,1,.3,1);
+    padding: 36px 36px 32px;
+    width: min(380px, 90vw);
+    display: flex; flex-direction: column; gap: 20px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.5);
+    animation: rise .28s cubic-bezier(.16,1,.3,1);
 }
 
 .overlay-box h2 {
-    font-family: var(--sans);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--tx-0);
+    font-family: "Outfit", sans-serif;
+    font-size: 1.1rem; font-weight: 700; color: var(--tx-0);
 }
 
 .results {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 20px;
-    background: var(--bg-3);
-    border-radius: var(--r);
+    background: var(--bg-3); border-radius: 10px;
+    padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 12px;
 }
+.result-row { display: flex; justify-content: space-between; align-items: baseline; }
+.rl { font-family: "Outfit", sans-serif; font-size: 0.82rem; color: var(--tx-1); }
+.rv { font-family: "JetBrains Mono", monospace; font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
+.rv.ok     { color: var(--green); }
+.rv.bad    { color: var(--red); }
+.rv.streak { color: var(--ac); }
 
-.result-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-
-.rl {
-    font-family: var(--sans);
-    font-size: 0.82rem;
-    color: var(--tx-1);
-}
-
-.rv {
-    font-family: var(--mono);
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-}
-.rv.correct { color: var(--green); }
-.rv.wrong   { color: var(--red); }
-.rv.streak  { color: var(--ac); }
-
-.overlay-btns {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+.overlay-btns { display: flex; flex-direction: column; gap: 8px; }
 
 .overlay-btns button {
-    width: 100%;
-    padding: 12px;
-    border-radius: var(--r);
-    font-family: var(--sans);
-    font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background .17s, transform .13s;
+    width: 100%; padding: 12px; border-radius: 10px;
+    font-family: "Outfit", sans-serif; font-size: 0.875rem; font-weight: 700;
+    cursor: pointer; transition: background .17s, transform .13s;
 }
-
 .overlay-btns button:first-child {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--tx-1);
+    background: transparent; border: 1px solid var(--border); color: var(--tx-1);
 }
 .overlay-btns button:first-child:hover { border-color: var(--tx-1); color: var(--tx-0); }
-
 .btn-primary { background: var(--ac); border: none; color: var(--bg-1); }
 .btn-primary:hover { background: var(--ac-lt); transform: translateY(-1px); }
