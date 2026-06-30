@@ -1,41 +1,60 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ── 1. VÝCHOZÍ REŽIM: SVĚTLÝ (LIGHT MODE) ── */
 :root {
-    /* Navy-dark — distinct from generic warm-grey AND AI purple-blue */
-    --bg-1:   #0d0f14;
-    --bg-2:   #131720;
-    --bg-3:   #1a1e2b;
+    --bg-1: #f8fafc;       /* Pozadí stránky */
+    --bg-2: #f1f5f9;       /* Pozadí hlavičky / top bar */
+    --bg-3: #ffffff;       /* Pozadí karet a panelů */
+    --border: #e2e8f0;     /* Světlé ohraničení */
+    --header-bg: rgba(241,245,249,0.92); /* Průhledná hlavička - světlý */
+
+    --ac: #f97316;         /* Tvoje oranžová */
+    --ac-lt: #fb923c;
+    --ac-dim: rgba(249,115,22,.10);
+    --ac-border: rgba(249,115,22,.22);
+
+    --tx-0: #0f172a;       /* Tmavý text pro výbornou čitelnost */
+    --tx-1: #475569;       /* Šedý text */
+    --tx-2: #64748b;
+
+    --red: #ef4444; --green: #22c55e; --gold: #f59e0b;
+}
+
+/* ── 2. VOLITELNÝ REŽIM: TMAVÝ (DARK MODE) ── */
+[data-theme="dark"] {
+    --bg-1: #0d0f14; 
+    --bg-2: #131720; 
+    --bg-3: #1a1e2b; 
     --border: #252a38;
+    --header-bg: rgba(13,15,20,0.92);
 
-    --ac:        #f97316;
-    --ac-lt:     #fb923c;
-    --ac-dim:    rgba(249,115,22,.09);
-    --ac-border: rgba(249,115,22,.20);
-
-    --tx-0: #e8eaf2;
-    --tx-1: #8890a8;
+    --tx-0: #e8eaf2; 
+    --tx-1: #8890a8; 
     --tx-2: #4a5068;
 
-    --red:    #f87171;
-    --green:  #34d399;
-    --gold:   #fbbf24;
-    --silver: #94a3b8;
-    --bronze: #cd8b4a;
-
-    /* Mono ONLY for data — scores, codes, timestamps */
-    --mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
-    /* Sans for everything else — nav, headings, descriptions */
-    --sans: "Outfit", system-ui, sans-serif;
-
-    --r: 10px;
+    --red: #f87171; --green: #34d399; --gold: #fbbf24;
 }
+
+/* ── 3. OPRAVA HORNÍ LIŠTY (HEADER) ── */
+header {
+    background-color: var(--bg-2); /* Správné pozadí lišty */
+    color: var(--tx-0);            /* Správná barva textu */
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s, color 0.2s; /* Plynulý přechod */
+}
+
+/* Nadpisy v liště musí mít výslovně nastavenou barvu na var(--tx-0) */
+header h2, header h1, header .header-hint {
+    color: var(--tx-0);
+}
+
 [data-theme="light"] {
     --bg-1:   #f2f0eb;
     --bg-2:   #ffffff;
     --bg-3:   #eae7e0;
     --border: #d8d4cc;
+    --header-bg: rgba(255,255,255,0.92);
     --ac:        #ea6a0a;
     --ac-lt:     #f97316;
     --ac-dim:    rgba(234,106,10,.10);
@@ -76,7 +95,7 @@ header {
     top: 0;
     z-index: 100;
     height: 54px;
-    background: rgba(13,15,20,.92);
+    background: var(--header-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex;

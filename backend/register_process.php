@@ -69,12 +69,13 @@ $newId = insertNewUser($pdo, [
     "surname"  => $surname,
     "email"    => $email,
     "password" => $hash,
+    'teacher' => isset($_POST['is_teacher']) ? 1 : 0,
 ]);
 
 // ── 6. Auto-login after successful registration ──────────────
 $_SESSION["user_id"]  = $newId;
 $_SESSION["username"] = $username;
-$_SESSION["teacher"]  = 0;
+$_SESSION["teacher"]  = isset($_POST['is_teacher']) ? 1 : 0;
 $_SESSION["anonym"]   = 0;
 
 header("Location: ../frontend/mainMenu.php");

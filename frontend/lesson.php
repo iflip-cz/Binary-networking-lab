@@ -10,11 +10,12 @@ $modeLabels = [1 => "Time Attack", 2 => "Training Lab", 3 => "Streak Challenge"]
 $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
 ?>
 <!doctype html>
-<html lang="cs" data-theme="dark">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($modeLabel) ?> — BNL</title>
+    <title>... — BNL</title>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
     <link rel="stylesheet" href="s.css/lesson.css">
 </head>
 <body>
@@ -102,8 +103,7 @@ const USER_ID    = <?= (int)$_SESSION["user_id"] ?>;
 
 // ── Theme ─────────────────────────────────────────────
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
+    const saved = localStorage.getItem('bnl-theme') || 'light';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 
@@ -269,6 +269,7 @@ const explainPanel = document.getElementById("explain-panel");
 const btnExplain   = document.getElementById("btn-explain");
 
 let explainOpen = false;
+let waitingForNext = false; 
 
 btnExplain.addEventListener('click', () => {
     explainOpen = !explainOpen;
@@ -316,8 +317,20 @@ function updateDisplay() {
 }
 
 function submitAnswer() {
+    // Čeká se na pokračování po špatné odpovědi (mód 2 & 3)
+    if (waitingForNext) {
+        waitingForNext = false;
+        elFeed.textContent = ''; elFeed.className = 'feedback';
+        elInput.disabled = false;
+        const btnS = document.getElementById('btn-submit');
+        btnS.disabled = false;
+        btnS.innerHTML = '&#x21B5;';   // ↵
+        nextQuestion();
+        return;
+    }
+
     if (!gameActive || !currentQuestion) return;
-    const raw = elInput.value.trim().toUpperCase().replace(/\s+/g,"");
+    const raw = elInput.value.trim().toUpperCase().replace(/\s+/g, '');
     if (!raw) return;
 
     const ok = raw === currentQuestion.answer.toUpperCase();
@@ -331,19 +344,23 @@ function submitAnswer() {
     } else {
         wrong++; streak = 0;
         showFeedback(false, currentQuestion.answer);
-        showExplain(currentQuestion);
         updateDisplay();
 
-        if (GAME_MODE === 2) {
+        if (GAME_MODE === 2 || GAME_MODE === 3) {
+            showExplain(currentQuestion);
+            // Automaticky otevři panel
+            explainOpen = true;
+            explainPanel.classList.add('open');
+            btnExplain.textContent = '[ × ] zavřít';
+            // Zamkni vstup, přeměň tlačítko na "Pokračovat"
             elInput.disabled = true;
-            document.getElementById("btn-submit").disabled = true;
-            setTimeout(() => {
-                elFeed.textContent = "";
-                elFeed.className = "feedback";
-                nextQuestion();
-            }, 2500);
+            elInput.value = '';
+            const btnS = document.getElementById('btn-submit');
+            btnS.disabled = false;
+            btnS.innerHTML = '&#9654;';    // ▶
+            waitingForNext = true;
         } else {
-            nextQuestion();
+            nextQuestion();  // Mód 1 Time Attack: žádné vysvětlení
         }
     }
 }
@@ -386,6 +403,32 @@ document.getElementById("btn-play-again").addEventListener("click", () => locati
 
 nextQuestion();
 startTimer();
+</script>
+<script>
+    // 1. Získání uloženého tématu a nastavení správného textu na tlačítku
+    const currentSavedTheme = localStorage.getItem('bnl-theme') || 'light';
+    const themeToggleBtn = document.getElementById('theme-toggle');
+
+    if (themeToggleBtn) {
+        // Hned po načtení nastavíme správný text tlačítka
+        themeToggleBtn.textContent = currentSavedTheme === 'dark' ? '[ light ]' : '[ dark ]';
+
+        // 2. Přidání akce pro kliknutí (přepnutí a uložení)
+        themeToggleBtn.addEventListener('click', function() {
+            // Zjistíme aktuální stav tagu <html>
+            const isCurrentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isCurrentlyDark ? 'light' : 'dark';
+            
+            // Nastavíme nový režim na <html>
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // TADY SE REŽIM UKLÁDÁ DO PAMĚTI PROHLÍŽEČE:
+            localStorage.setItem('bnl-theme', newTheme);
+            
+            // Změníme text tlačítka
+            this.textContent = newTheme === 'dark' ? '[ light ]' : '[ dark ]';
+        });
+    }
 </script>
 </body>
 </html>

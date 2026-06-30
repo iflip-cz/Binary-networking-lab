@@ -30,14 +30,15 @@ function connectDB() {
 function insertNewUser($pdo, $userInfo) {
     $stmt = $pdo->prepare("
         INSERT INTO user (username, name, surname, email, password, teacher, anonym)
-        VALUES (?, ?, ?, ?, ?, 0, 0)
+        VALUES (?, ?, ?, ?, ?, ?, 0)
     ");
     $stmt->execute([
         $userInfo["username"],
         $userInfo["name"],
         $userInfo["surname"],
         $userInfo["email"],
-        $userInfo["password"],   // hash produced by password_hash()
+        $userInfo["password"],
+        (int)($userInfo["teacher"] ?? 0),
     ]);
     return (int)$pdo->lastInsertId();
 }

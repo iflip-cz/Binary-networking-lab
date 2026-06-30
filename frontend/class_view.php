@@ -46,6 +46,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($class["name"]) ?> — BNL</title>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
     <link rel="stylesheet" href="s.css/class.css">
 </head>
 <body>
@@ -158,8 +159,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
 
 <script>
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
+    const saved = localStorage.getItem('bnl-theme') || 'light';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 document.getElementById('theme-toggle').addEventListener('click', function() {
@@ -179,6 +179,32 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
         });
     });
 });
+</script>
+<script>
+    // 1. Získání uloženého tématu a nastavení správného textu na tlačítku
+    const currentSavedTheme = localStorage.getItem('bnl-theme') || 'light';
+    const themeToggleBtn = document.getElementById('theme-toggle');
+
+    if (themeToggleBtn) {
+        // Hned po načtení nastavíme správný text tlačítka
+        themeToggleBtn.textContent = currentSavedTheme === 'dark' ? '[ light ]' : '[ dark ]';
+
+        // 2. Přidání akce pro kliknutí (přepnutí a uložení)
+        themeToggleBtn.addEventListener('click', function() {
+            // Zjistíme aktuální stav tagu <html>
+            const isCurrentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isCurrentlyDark ? 'light' : 'dark';
+            
+            // Nastavíme nový režim na <html>
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // TADY SE REŽIM UKLÁDÁ DO PAMĚTI PROHLÍŽEČE:
+            localStorage.setItem('bnl-theme', newTheme);
+            
+            // Změníme text tlačítka
+            this.textContent = newTheme === 'dark' ? '[ light ]' : '[ dark ]';
+        });
+    }
 </script>
 </body>
 </html>

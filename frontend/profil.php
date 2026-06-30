@@ -18,6 +18,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($user["username"]) ?> — BNL</title>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
     <link rel="stylesheet" href="s.css/profil.css">
 </head>
 <body>
@@ -135,6 +136,8 @@ $initial = strtoupper(substr($user["username"], 0, 1));
     <span class="sep">·</span>
     <a href="../backend/logout.php">Odhlasit se</a>
 </footer>
-
+<script>
+    // Theme is applied by the inline script in <head> — no toggle button on this page.
+</script>
 </body>
 </html>

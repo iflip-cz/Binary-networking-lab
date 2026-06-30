@@ -10,6 +10,7 @@ if (isset($_SESSION["user_id"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
     <link rel="stylesheet" href="s.css/index.css">
     <title>Binary Networking Lab</title>
 </head>
@@ -70,5 +71,31 @@ if (isset($_SESSION["user_id"])) {
     <span class="sep">·</span>
     <a href="register.php">Registrace</a>
 </footer>
+<script>
+    // 1. Získání uloženého tématu a nastavení správného textu na tlačítku
+    const currentSavedTheme = localStorage.getItem('bnl-theme') || 'light';
+    const themeToggleBtn = document.getElementById('theme-toggle');
+
+    if (themeToggleBtn) {
+        // Hned po načtení nastavíme správný text tlačítka
+        themeToggleBtn.textContent = currentSavedTheme === 'dark' ? '[ light ]' : '[ dark ]';
+
+        // 2. Přidání akce pro kliknutí (přepnutí a uložení)
+        themeToggleBtn.addEventListener('click', function() {
+            // Zjistíme aktuální stav tagu <html>
+            const isCurrentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isCurrentlyDark ? 'light' : 'dark';
+            
+            // Nastavíme nový režim na <html>
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // TADY SE REŽIM UKLÁDÁ DO PAMĚTI PROHLÍŽEČE:
+            localStorage.setItem('bnl-theme', newTheme);
+            
+            // Změníme text tlačítka
+            this.textContent = newTheme === 'dark' ? '[ light ]' : '[ dark ]';
+        });
+    }
+</script>
 </body>
 </html>

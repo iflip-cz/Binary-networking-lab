@@ -7,6 +7,7 @@
     --bg-2:   #131720;
     --bg-3:   #1a1e2b;
     --border: #252a38;
+    --header-bg: rgba(13,15,20,0.92);
 
     --ac:        #f97316;
     --ac-dim:    rgba(249,115,22,.09);
@@ -23,6 +24,27 @@
     --sans: "Outfit",        system-ui, sans-serif;
     --mono: "JetBrains Mono","Fira Code", Consolas, monospace;
     --r: 10px;
+}
+
+/* Light theme override */
+[data-theme="light"] {
+    --bg-1:   #f8fafc;
+    --bg-2:   #f1f5f9;
+    --bg-3:   #ffffff;
+    --border: #e2e8f0;
+    --header-bg: rgba(241,245,249,0.92);
+
+    --ac:        #ea6a0a;
+    --ac-dim:    rgba(234,106,10,.09);
+    --ac-border: rgba(234,106,10,.20);
+
+    --tx-0: #0f172a;
+    --tx-1: #475569;
+    --tx-2: #64748b;
+
+    --red:   #ef4444;
+    --green: #16a34a;
+    --gold:  #b45309;
 }
 
 ::selection { background: var(--ac); color: var(--bg-1); }
@@ -45,7 +67,7 @@ body {
 /* ── Header ─────────────────────────────────────────── */
 header {
     height: 54px;
-    background: rgba(13,15,20,.92);
+    background: var(--header-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex;

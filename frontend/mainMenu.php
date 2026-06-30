@@ -54,6 +54,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu — Binary Networking Lab</title>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
     <link rel="stylesheet" href="s.css/mainMenu.css">
 </head>
 <body>
@@ -243,8 +244,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
 <script>
 // ── Theme ─────────────────────────────────────────────
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
+    const saved = localStorage.getItem('bnl-theme') || 'light';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 document.getElementById('theme-toggle').addEventListener('click', function() {
@@ -325,6 +325,5 @@ function setActive(btns, val, attr) {
     btns.forEach(b => b.classList.toggle('active', b.getAttribute(attr)===val));
 }
 </script>
-
 </body>
 </html>
