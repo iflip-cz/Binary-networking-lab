@@ -4,8 +4,10 @@ if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 require "../backend/funcDB.php";
 $pdo = connectDB();
 
-$leaderboardTA = getLeaderboard($pdo, 1, 10);
-$leaderboardST = getLeaderboard($pdo, 2, 10);
+$lbTA30  = getTimeAttackLeaderboard($pdo, 30,  10);
+$lbTA60  = getTimeAttackLeaderboard($pdo, 60,  10);
+$lbTA120 = getTimeAttackLeaderboard($pdo, 120, 10);
+$lbST    = getStreakLeaderboard($pdo, 10);
 $initial       = strtoupper(substr($_SESSION["username"], 0, 1));
 $isTeacher     = (int)$_SESSION["teacher"] === 1;
 
@@ -54,7 +56,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu — Binary Networking Lab</title>
-    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
     <link rel="stylesheet" href="s.css/mainMenu.css">
 </head>
 <body>
@@ -95,22 +97,33 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
         </div>
     </section>
 
-    <!-- ── Leaderboards (two tabs) ───────────────────── -->
+    <!-- ── Leaderboards (Time Attack split per duration + Streak) ── -->
     <section class="leaderboard-section">
         <div class="lb-header">
             <h2>Leaderboard</h2>
             <div class="lb-tabs">
-                <button class="lb-tab active" data-board="ta">Time Attack</button>
+                <button class="lb-tab active" data-board="ta30">TA 30s</button>
+                <button class="lb-tab" data-board="ta60">TA 60s</button>
+                <button class="lb-tab" data-board="ta120">TA 120s</button>
                 <button class="lb-tab" data-board="st">Streak</button>
             </div>
         </div>
 
-        <div id="lb-ta" class="lb-table-wrap">
-            <?php if (count($leaderboardTA) > 0): ?>
+        <?php
+        $boards = [
+            'ta30'  => ['rows' => $lbTA30,  'metric' => 'Skóre'],
+            'ta60'  => ['rows' => $lbTA60,  'metric' => 'Skóre'],
+            'ta120' => ['rows' => $lbTA120, 'metric' => 'Skóre'],
+            'st'    => ['rows' => $lbST,    'metric' => 'Streak'],
+        ];
+        $first = true;
+        foreach ($boards as $key => $b): ?>
+        <div id="lb-<?= $key ?>" class="lb-table-wrap"<?= $first ? '' : ' style="display:none;"' ?>>
+            <?php if (count($b['rows']) > 0): ?>
             <table>
-                <thead><tr><th>#</th><th>Hráč</th><th>Skóre</th></tr></thead>
+                <thead><tr><th>#</th><th>Hráč</th><th><?= $b['metric'] ?></th></tr></thead>
                 <tbody>
-                    <?php foreach ($leaderboardTA as $i => $r): ?>
+                    <?php foreach ($b['rows'] as $i => $r): ?>
                     <tr <?= $r["username"] === $_SESSION["username"] ? 'class="highlight"' : '' ?>>
                         <td><?= $i+1 ?></td>
                         <td><?= $r["anonym"] ? "anonym" : htmlspecialchars($r["username"]) ?></td>
@@ -121,23 +134,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
             </table>
             <?php else: ?><p class="empty-state">Zatím žádné záznamy.</p><?php endif; ?>
         </div>
-
-        <div id="lb-st" class="lb-table-wrap" style="display:none;">
-            <?php if (count($leaderboardST) > 0): ?>
-            <table>
-                <thead><tr><th>#</th><th>Hráč</th><th>Streak</th></tr></thead>
-                <tbody>
-                    <?php foreach ($leaderboardST as $i => $r): ?>
-                    <tr <?= $r["username"] === $_SESSION["username"] ? 'class="highlight"' : '' ?>>
-                        <td><?= $i+1 ?></td>
-                        <td><?= $r["anonym"] ? "anonym" : htmlspecialchars($r["username"]) ?></td>
-                        <td><?= (int)$r["highscore"] ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <?php else: ?><p class="empty-state">Zatím žádné záznamy.</p><?php endif; ?>
-        </div>
+        <?php $first = false; endforeach; ?>
     </section>
 
     <!-- ── Classes ───────────────────────────────────── -->
@@ -244,7 +241,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
 <script>
 // ── Theme ─────────────────────────────────────────────
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'light';
+    const saved = localStorage.getItem('bnl-theme') || 'dark';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 document.getElementById('theme-toggle').addEventListener('click', function() {
@@ -260,8 +257,8 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        document.getElementById('lb-ta').style.display = tab.dataset.board === 'ta' ? '' : 'none';
-        document.getElementById('lb-st').style.display = tab.dataset.board === 'st' ? '' : 'none';
+        document.querySelectorAll('.lb-table-wrap').forEach(w => { w.style.display = 'none'; });
+        document.getElementById('lb-' + tab.dataset.board).style.display = '';
     });
 });
 

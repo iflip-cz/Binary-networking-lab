@@ -46,7 +46,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($class["name"]) ?> — BNL</title>
-    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
     <link rel="stylesheet" href="s.css/class.css">
 </head>
 <body>
@@ -159,7 +159,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
 
 <script>
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'light';
+    const saved = localStorage.getItem('bnl-theme') || 'dark';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 document.getElementById('theme-toggle').addEventListener('click', function() {

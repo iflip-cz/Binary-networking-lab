@@ -28,6 +28,28 @@
     --r:    10px;
 }
 
+/* ── Light theme ───────────────────────────────────────── */
+[data-theme="light"] {
+    --bg-0:      #e7e3da;
+    --bg-1:      #f2f0eb;
+    --bg-2:      #ffffff;
+    --bg-3:      #eae7e0;
+    --border:    #d8d4cc;
+    --border-hi: #c4bfb4;
+
+    --ac:        #ea6a0a;
+    --ac-lt:     #f97316;
+    --ac-dim:    rgba(234,106,10,.10);
+    --ac-border: rgba(234,106,10,.25);
+
+    --tx-0:  #1c1a16;
+    --tx-1:  #6b6458;
+    --tx-2:  #9e9080;
+
+    --red:   #dc2626;
+    --green: #16a34a;
+}
+
 ::selection { background: var(--ac); color: var(--bg-0); }
 
 /* ── Page ──────────────────────────────────────────────── */

@@ -19,6 +19,13 @@
     --tx-2: #64748b;
 
     --red: #ef4444; --green: #22c55e; --gold: #f59e0b;
+
+    /* Type + shared tokens (were referenced but never defined) */
+    --sans:   "Outfit",         system-ui, sans-serif;
+    --mono:   "JetBrains Mono", "Fira Code", Consolas, monospace;
+    --r:      10px;
+    --silver: #c0c6d4;
+    --bronze: #cd7f52;
 }
 
 /* ── 2. VOLITELNÝ REŽIM: TMAVÝ (DARK MODE) ── */
@@ -169,6 +176,22 @@ header nav { display: flex; align-items: center; gap: 4px; }
     transition: color .15s, background .15s;
 }
 .nav-link:hover { color: var(--red); background: rgba(248,113,113,.06); }
+
+/* Theme toggle — same look as the lesson / class pages */
+
+.theme-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.65rem;
+    color: var(--tx-2);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: color .15s, border-color .15s;
+}
+.theme-btn:hover { color: var(--ac); border-color: var(--ac-border); }
 
 /* ── Main ───────────────────────────────────────────── */
 main {

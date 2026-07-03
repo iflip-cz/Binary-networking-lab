@@ -1,0 +1,2 @@
+# Per-environment database credentials — each server keeps its own copy
+backend/config.php

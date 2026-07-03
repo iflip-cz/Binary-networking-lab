@@ -125,16 +125,29 @@ header h2 {
 
 .timer {
     font-family: "JetBrains Mono", monospace;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: var(--tx-0);
-    letter-spacing: -0.04em;
-    min-width: 48px;
-    text-align: right;
-    transition: color .3s;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--ac);
+    letter-spacing: -0.02em;
+    min-width: 66px;
+    text-align: center;
+    padding: 3px 14px;
+    border-radius: 9px;
+    background: var(--ac-dim);
+    border: 1px solid var(--ac-border);
+    transition: color .3s, background .3s, border-color .3s;
 }
-.timer--warn { color: var(--gold); }
-.timer--crit { color: var(--red); animation: pulse .55s ease-in-out infinite alternate; }
+.timer--warn {
+    color: var(--gold);
+    background: rgba(251,191,36,.12);
+    border-color: rgba(251,191,36,.38);
+}
+.timer--crit {
+    color: var(--red);
+    background: rgba(248,113,113,.14);
+    border-color: rgba(248,113,113,.5);
+    animation: pulse .55s ease-in-out infinite alternate;
+}
 @keyframes pulse { from { opacity: 1; } to { opacity: .4; } }
 
 .streak-hud { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
@@ -442,6 +455,31 @@ header h2 {
 .rv.ok     { color: var(--green); }
 .rv.bad    { color: var(--red); }
 .rv.streak { color: var(--ac); }
+
+/* Newly unlocked achievements shown on the game-over overlay */
+.new-achv {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--ac-dim);
+    border: 1px solid var(--ac-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    animation: rise .3s ease;
+}
+.new-achv.hidden { display: none; }
+.na-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--ac);
+    letter-spacing: 0.04em;
+}
+.na-item {
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--tx-0);
+}
 
 .overlay-btns { display: flex; flex-direction: column; gap: 8px; }
 

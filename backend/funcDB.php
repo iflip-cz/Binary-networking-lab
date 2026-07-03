@@ -6,16 +6,31 @@
 // =========================================================
 
 function connectDB() {
-    $dsn = "mysql:host=localhost;dbname=projekt_zwa;charset=utf8mb4";
-    $user = "root";
-    $pass = "";
+    // Per-environment credentials live in backend/config.php (gitignored), so the
+    // same code runs on XAMPP, webzdarma and the Oracle VPS. Falls back to local
+    // XAMPP defaults when that file isn't present.
+    $defaults = [
+        "host"    => "localhost",
+        "dbname"  => "projekt_zwa",
+        "user"    => "root",
+        "pass"    => "",
+        "charset" => "utf8mb4",
+    ];
+    $cfgFile = __DIR__ . "/config.php";
+    $cfg = file_exists($cfgFile) ? array_merge($defaults, require $cfgFile) : $defaults;
 
+    $dsn = "mysql:host={$cfg['host']};dbname={$cfg['dbname']};charset={$cfg['charset']}";
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ];
 
-    return new PDO($dsn, $user, $pass, $options);
+    try {
+        return new PDO($dsn, $cfg["user"], $cfg["pass"], $options);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        exit("Database connection failed. Set the correct credentials in backend/config.php for this server.");
+    }
 }
 
 // ---------------------------------------------------------
@@ -103,31 +118,47 @@ function addUserStats($pdo, $id_user, $answered, $correct) {
 }
 
 // ---------------------------------------------------------
-//  LEADERBOARD  (uses pre-computed highscore columns)
+//  LEADERBOARDS  (aggregated from game_history, so Time Attack
+//  stays split per duration and streaks are read accurately)
 // ---------------------------------------------------------
 
 /**
- * Returns the top $limit players for the given game mode.
- * Respects the anonym flag – anonymous names are shown as "Anonym".
- *
- * $game_mode = 1  → Time Attack  (highscore_1gm)
- * $game_mode = 2  → Training Lab (highscore_2gm)
+ * Time Attack leaderboard for ONE duration (30 / 60 / 120 s).
+ * A player's entry is their best correct-count in a round of that exact length,
+ * so a 120 s run never competes against a 30 s run.
  */
-function getLeaderboard($pdo, $game_mode = 1, $limit = 10) {
-    if ($game_mode === 1) {
-        $sql = "SELECT username, anonym, highscore_1gm AS highscore
-                FROM user
-                WHERE highscore_1gm > 0
-                ORDER BY highscore_1gm DESC
-                LIMIT :lim";
-    } else {
-        $sql = "SELECT username, anonym, highscore_2gm AS highscore
-                FROM user
-                WHERE highscore_2gm > 0
-                ORDER BY highscore_2gm DESC
-                LIMIT :lim";
-    }
-    $stmt = $pdo->prepare($sql);
+function getTimeAttackLeaderboard($pdo, $seconds, $limit = 10) {
+    $timeStr = gmdate("H:i:s", (int)$seconds);   // 30 -> "00:00:30"
+    $stmt = $pdo->prepare("
+        SELECT u.username, u.anonym, MAX(gh.Q_AC) AS highscore
+        FROM game_history gh
+        JOIN user u ON u.ID_user = gh.Who
+        WHERE gh.Gm = 1 AND gh.Time = :t
+        GROUP BY u.ID_user, u.username, u.anonym
+        HAVING highscore > 0
+        ORDER BY highscore DESC
+        LIMIT :lim
+    ");
+    $stmt->bindValue(':t',   $timeStr);
+    $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+/**
+ * Streak Challenge leaderboard: each player's best streak (Gm = 3).
+ */
+function getStreakLeaderboard($pdo, $limit = 10) {
+    $stmt = $pdo->prepare("
+        SELECT u.username, u.anonym, MAX(gh.streak) AS highscore
+        FROM game_history gh
+        JOIN user u ON u.ID_user = gh.Who
+        WHERE gh.Gm = 3
+        GROUP BY u.ID_user, u.username, u.anonym
+        HAVING highscore > 0
+        ORDER BY highscore DESC
+        LIMIT :lim
+    ");
     $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
@@ -194,13 +225,68 @@ function getUserAchievements($pdo, $id_user) {
     return $stmt->fetchAll();
 }
 
-/** Awards an achievement to a user (ignores duplicates via INSERT IGNORE). */
+/**
+ * Awards an achievement to a user (ignores duplicates via INSERT IGNORE).
+ * Returns true only if the badge was newly awarded (not already owned).
+ */
 function awardAchievement($pdo, $id_user, $id_achievement) {
     $stmt = $pdo->prepare("
         INSERT IGNORE INTO user_achivements (ID_user, ID_achivement)
         VALUES (?, ?)
     ");
     $stmt->execute([$id_user, $id_achievement]);
+    return $stmt->rowCount() > 0;
+}
+
+/**
+ * Checks all achievement conditions after a finished game and awards any that
+ * are newly met. Rules are keyed by achievement Name and matched against the
+ * rows seeded in the `achivements` table (see backend/seed_achievements.sql),
+ * so the DB stays the single source of truth for which badges exist.
+ *
+ * $game keys: game_mode, q_answered, q_correct, q_wrong, streak, score.
+ * Returns the list of achievement Names newly awarded this call.
+ */
+function checkAndAwardAchievements($pdo, $id_user, $game) {
+    $user = getUserById($pdo, $id_user);
+    if (!$user) return [];
+
+    // Cumulative stats (already include the game that just finished)
+    $answered   = (int)$user["Q_answerd"];
+    $correct    = (int)$user["Q_correct"];
+    $accuracy   = $answered > 0 ? $correct / $answered * 100 : 0;
+    $h1         = (int)$user["highscore_1gm"];
+    $bestStreak = max((int)$user["highscore_2gm"], (int)$game["streak"]);
+
+    // Condition per achievement Name (must match seeded Names exactly).
+    $rules = [
+        "První hra"     => true,
+        "Stovka otázek" => $answered >= 100,
+        "Tisíc otázek"  => $answered >= 1000,
+        "Přesná muška"  => $answered >= 20 && $accuracy >= 90,
+        "Série 10"      => $bestStreak >= 10,
+        "Série 25"      => $bestStreak >= 25,
+        "Rychloprsty"   => $h1 >= 20,
+        "Mistr převodů" => $h1 >= 40,
+        "Bez chybičky"  => (int)$game["q_wrong"] === 0 && (int)$game["q_correct"] >= 10,
+    ];
+
+    // Map Name -> ID from whatever is actually seeded in the DB.
+    $byName = [];
+    foreach (getAllAchievements($pdo) as $a) {
+        $byName[$a["Name"]] = $a["ID_achivements"];
+    }
+
+    $awarded = [];
+    foreach ($rules as $name => $met) {
+        if ($met && isset($byName[$name])) {
+            // Only report badges that were actually new this game.
+            if (awardAchievement($pdo, $id_user, $byName[$name])) {
+                $awarded[] = $name;
+            }
+        }
+    }
+    return $awarded;
 }
 
 /** Deletes an achievement row (admin CRUD). */

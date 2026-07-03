@@ -15,7 +15,7 @@ $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>... — BNL</title>
-    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'light');</script>
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
     <link rel="stylesheet" href="s.css/lesson.css">
 </head>
 <body>
@@ -87,6 +87,9 @@ $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
                 <strong class="rv streak" id="result-streak">0</strong>
             </div>
         </div>
+
+        <div id="new-achv" class="new-achv hidden"></div>
+
         <div class="overlay-btns">
             <button onclick="window.location.href='mainMenu.php'">← Menu</button>
             <button id="btn-play-again" class="btn-primary">Hrát znovu</button>
@@ -103,7 +106,7 @@ const USER_ID    = <?= (int)$_SESSION["user_id"] ?>;
 
 // ── Theme ─────────────────────────────────────────────
 (function() {
-    const saved = localStorage.getItem('bnl-theme') || 'light';
+    const saved = localStorage.getItem('bnl-theme') || 'dark';
     document.getElementById('theme-toggle').textContent = saved === 'dark' ? '[ light ]' : '[ dark ]';
 })();
 
@@ -316,6 +319,12 @@ function updateDisplay() {
     if (elBest)   elBest.textContent   = maxStreak;
 }
 
+// Accept a correct answer regardless of leading zeros — so "101" counts for
+// DEC→BIN of 5 just like the zero-padded "00000101" the game stores internally.
+function normalizeAnswer(s) {
+    return String(s).trim().toUpperCase().replace(/\s+/g, '').replace(/^0+(?=.)/, '');
+}
+
 function submitAnswer() {
     // Čeká se na pokračování po špatné odpovědi (mód 2 & 3)
     if (waitingForNext) {
@@ -330,10 +339,10 @@ function submitAnswer() {
     }
 
     if (!gameActive || !currentQuestion) return;
-    const raw = elInput.value.trim().toUpperCase().replace(/\s+/g, '');
-    if (!raw) return;
+    const rawInput = elInput.value.trim();
+    if (!rawInput) return;
 
-    const ok = raw === currentQuestion.answer.toUpperCase();
+    const ok = normalizeAnswer(rawInput) === normalizeAnswer(currentQuestion.answer);
 
     if (ok) {
         correct++; streak++;
@@ -394,7 +403,28 @@ function endGame() {
         body: JSON.stringify({game_mode: GAME_MODE, time_seconds:TIME_LIMIT,
             q_answered:correct+wrong, q_correct:correct, q_wrong:wrong,
             q_skipped:0, streak:maxStreak, score})
+    })
+    .then(r => r.json())
+    .then(showNewAchievements)
+    .catch(() => {});
+}
+
+// Show any badges unlocked by this game on the game-over overlay.
+function showNewAchievements(resp) {
+    const list = resp && resp.new_achievements;
+    if (!list || !list.length) return;
+    const box = document.getElementById("new-achv");
+    const title = document.createElement("span");
+    title.className = "na-title";
+    title.textContent = "🏆 " + (list.length > 1 ? "Nové achievementy" : "Nový achievement");
+    box.appendChild(title);
+    list.forEach(name => {
+        const item = document.createElement("span");
+        item.className = "na-item";
+        item.textContent = name;
+        box.appendChild(item);
     });
+    box.classList.remove("hidden");
 }
 
 document.getElementById("btn-submit").addEventListener("click", submitAnswer);

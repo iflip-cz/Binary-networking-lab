@@ -1,127 +1,59 @@
-# Projekt – Poznámky k nastavení
+# Projekt – Poznámky (aktuální stav)
 
-## ⚠️ KRITICKÁ OPRAVA DATABÁZE – udělej hned!
-
-Sloupec `password` v tabulce `user` je definovaný jako `varchar(30)`,
-ale PHP funkce `password_hash()` generuje hashované heslo délky **~60 znaků**.
-Pokud to neopravíš, registrace skončí tichým selháním (heslo se zkrátí, přihlášení pak nikdy nebude fungovat).
-
-**Spusť v phpMyAdmin → SQL:**
-```sql
-ALTER TABLE `user`
-    MODIFY COLUMN `password` varchar(255) NOT NULL;
-
--- A e-mail je také moc krátký (jen 20 znaků):
-ALTER TABLE `user`
-    MODIFY COLUMN `email` varchar(100) NOT NULL;
-```
+Kompletní setup a spuštění je v [README.md](README.md).
+Tento soubor shrnuje, co je hotové a co ještě zbývá.
 
 ---
 
-## 1. Název databáze
-
-V souboru `backend/funcDB.php` změň řádek:
-```php
-$dsn = "mysql:host=localhost;dbname=zwa_projekt;charset=utf8mb4";
-```
-Na skutečný název tvé databáze, např. `projektfilip1` nebo cokoliv, cos zvolil v phpMyAdmin.
+## Stav databáze
+- ✅ `user.password` je `varchar(255)` a `user.email` `varchar(100)` — kritická
+  oprava délek sloupců **už je aplikovaná** (dřív hrozilo tiché selhání registrace).
+- ✅ Název databáze `projekt_zwa` odpovídá `backend/funcDB.php` → `connectDB()`.
+- ✅ Tabulka `achivements` je naplněná — viz `backend/seed_achievements.sql`.
 
 ---
 
-## 2. Struktura souborů
-
-```
-projekt/
-│
-├── frontend/               ← HTML stránky (co vidí uživatel)
-│   ├── index.php           ← Úvodní/landing stránka
-│   ├── login.php           ← Přihlašovací formulář
-│   ├── register.php        ← Registrační formulář
-│   ├── mainMenu.php        ← Hlavní menu + žebříček (jen pro přihlášené)
-│   ├── profil.php          ← Profil uživatele (statistiky, achievementy, PfP)
-│   ├── lesson.php          ← Herní stránka (JS generuje otázky)
-│   └── .css/               ← CSS soubory (vytvoř si sám)
-│       ├── index.css
-│       ├── register.css
-│       ├── mainMenu.css
-│       ├── profil.css
-│       └── lesson.css
-│
-└── backend/                ← PHP logika + databáze (uživatel sem nechodí)
-    ├── funcDB.php          ← VŠECHNY databázové funkce (PDO)
-    ├── login_process.php   ← Zpracování přihlášení
-    ├── register_process.php← Zpracování registrace
-    ├── save_game.php       ← Uložení výsledku hry (volá ho JS via fetch)
-    └── logout.php          ← Odhlášení
-```
+## Co už funguje
+- Registrace / přihlášení / odhlášení (hesla přes `password_hash()` / `password_verify()`).
+- Herní módy: **Time Attack**, **Streak Challenge**, **Training Lab** (otázky generuje JS).
+- Globální i třídní žebříčky, třídy (učitel zakládá kódem, student se připojuje).
+- Profil: statistiky, historie posledních her, získané achievementy.
+- CSS pro všechny stránky + **konzistentní světlý/tmavý režim** (výchozí je tmavý,
+  přepínač `[ dark ]/[ light ]` ukládá volbu do `localStorage`).
+- **Udělování achievementů** po dohrání hry — `save_game.php` volá
+  `checkAndAwardAchievements()` a nové odznaky ukáže na obrazovce konce hry.
+- **Ochrana skóre (anti-cheat)** — `save_game.php` odmítá výsledky, které jsou
+  nemožné (záporné, součet nesedí, streak > správně) nebo nereálné (příliš mnoho
+  odpovědí za daný čas). Nezabrání to všemu, ale zastaví triviální podvod se skóre.
 
 ---
 
-## 3. Co každý soubor dělá
-
-### `backend/funcDB.php`
-Obsahuje **všechny** funkce pro práci s databází:
-- `connectDB()` – PDO připojení
-- `insertNewUser()` – registrace
-- `getUserByUsername()` / `getUserByEmail()` / `getUserById()` – hledání uživatele
-- `showUsers()` / `deleteUser()` – správa uživatelů (admin panel)
-- `updateHighscore()` – aktualizace highscore po hře
-- `addUserStats()` – přičtení statistik
-- `getLeaderboard()` – top 10 pro žebříček
-- `insertGameHistory()` / `getUserHistory()` – záznamy her
-- `getAllAchievements()` / `getUserAchievements()` / `awardAchievement()` / `deleteAchievement()` – achievementy
-
-### `backend/login_process.php`
-- Přijme POST z `login.php`
-- Ověří username + `password_verify()`
-- Uloží `$_SESSION["user_id"]`, `username`, `teacher`, `anonym`
-- Přesměruje na `mainMenu.php` nebo zpět s `?error=1`
-
-### `backend/register_process.php`
-- Přijme POST z `register.php`
-- Ověří všechna pole a sílu hesla
-- Zkontroluje unikátnost username a e-mailu
-- Hashuje heslo (`password_hash()`)
-- Vloží uživatele, nastaví session, přesměruje na `mainMenu.php`
-
-### `backend/save_game.php`
-- Volá ho `lesson.php` po skončení hry přes `fetch()`
-- Uloží záznam do `game_history`
-- Aktualizuje `Q_answerd`, `Q_correct`, `highscore_1gm`/`highscore_2gm`
-
-### `frontend/lesson.php`
-- Herní stránka, otázky generuje JavaScript (žádná DB = žádný cheat)
-- Mód 1 (Time Attack): odpočítává čas, hodnotí rychlost
-- Mód 2 (Training Lab): bez limitu, jediná chyba ukončí streak
-- Po skončení odešle výsledek na `save_game.php`
+## Achievementy – jak to funguje
+1. Seznam odznaků žije v tabulce `achivements`. Nasadíš/resetuješ ho souborem
+   `backend/seed_achievements.sql` (v phpMyAdmin nebo `mysql -u root projekt_zwa < ...`).
+2. Podmínky se vyhodnocují v `checkAndAwardAchievements()` v `backend/funcDB.php`
+   a párují se s odznaky **podle sloupce `Name`**.
+3. Přidat nový odznak = přidat řádek do seed SQL **a** pravidlo (se stejným `Name`)
+   do pole `$rules` v té funkci.
 
 ---
 
-## 4. Session proměnné (používají je všechny stránky)
-
+## Session proměnné (používají je všechny stránky)
 | Klíč | Obsah |
 |------|-------|
-| `$_SESSION["user_id"]` | `ID_user` z tabulky user |
+| `$_SESSION["user_id"]`  | `ID_user` z tabulky user |
 | `$_SESSION["username"]` | uživatelské jméno |
-| `$_SESSION["teacher"]` | 1 = admin/učitel, 0 = student |
-| `$_SESSION["anonym"]` | 1 = skrýt jméno na žebříčku |
+| `$_SESSION["teacher"]`  | 1 = učitel/admin, 0 = student |
+| `$_SESSION["anonym"]`   | 1 = skrýt jméno na žebříčku |
 
 ---
 
-## 5. Co ještě chybí (TODO pro tebe)
-
-- **CSS soubory** – vytvoř `.css/` složku a nastyluj stránky
-- **Nahrávání profilového obrázku** (PfP na profil.php) – potřebuješ `move_uploaded_file()` 
-  a sloupec `profile_pic varchar(255)` v tabulce user (teď tam není!)
-- **Admin panel** (`admin.php`) – CRUD pro achievementy (přidej/uprav/smaž badge)
-- **Check achievements** – po každé hře v `save_game.php` zkontroluj podmínky a případně zavolej `awardAchievement()`
-- Sloupec `Q_AS` v `game_history` – v kódu se předává jako `q_skipped = 0`, upřesni jeho význam
-
----
-
-## 6. Jak spustit
-
-1. Otevři XAMPP, nastartuj Apache + MySQL
-2. Importuj SQL (z Gemini chatu) do phpMyAdmin → spusť ALTER TABLE výše
-3. Nastav název DB v `backend/funcDB.php`
-4. V prohlížeči otevři: `http://localhost/TVOJE_SLOŽKA/frontend/index.php`
+## Co ještě zbývá (TODO)
+- **Nahrávání profilového obrázku** — potřebuje `move_uploaded_file()` a sloupec
+  `profile_pic varchar(255)` v tabulce `user` (teď tam není).
+- **Admin panel** (`admin.php`) — CRUD achievementů a správa uživatelů. Funkce
+  `showUsers()`, `deleteUser()`, `deleteAchievement()` už v `funcDB.php` čekají.
+- Sloupec `Q_AS` v `game_history` se zatím posílá jako `0` (q_skipped) — buď
+  doplnit „přeskočené" otázky do hry, nebo sloupec odstranit.
+- (Ke zvážení) Role „učitel" jde při registraci zvolit zaškrtávátkem. Je to záměr,
+  ale pro ostrý provoz by dávalo smysl schvalování učitelů.
