@@ -35,7 +35,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
 
         <div class="hero-top">
             <div class="hero-identity">
-                <div class="pfp" aria-hidden="true"><?= $initial ?></div>
+                <div class="pfp" aria-hidden="true"><?= htmlspecialchars($initial) ?></div>
                 <div class="hero-text">
                     <h1><?= htmlspecialchars($user["username"]) ?></h1>
                     <p class="real-name"><?= htmlspecialchars($user["name"]) ?> <?= htmlspecialchars($user["surname"]) ?></p>

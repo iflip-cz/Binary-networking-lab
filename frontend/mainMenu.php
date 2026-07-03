@@ -64,7 +64,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
     <nav>
         <button class="theme-btn" id="theme-toggle">[ light ]</button>
         <a href="profil.php" class="nav-avatar">
-            <span class="avatar-init"><?= $initial ?></span>
+            <span class="avatar-init"><?= htmlspecialchars($initial) ?></span>
             <span class="avatar-name"><?= htmlspecialchars($_SESSION["username"]) ?></span>
         </a>
         <a href="../backend/logout.php" class="nav-link">odhlásit</a>

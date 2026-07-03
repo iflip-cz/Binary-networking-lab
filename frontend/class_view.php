@@ -94,7 +94,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
                 <thead><tr><th>#</th><th>Hráč</th><th><?= $labels[$key] ?></th></tr></thead>
                 <tbody>
                     <?php foreach ($rows as $i => $r): ?>
-                    <tr <?= (int)$r["username"] === $_SESSION["username"] ? 'class="highlight"' : '' ?>>
+                    <tr <?= $r["username"] === $_SESSION["username"] ? 'class="highlight"' : '' ?>>
                         <td><?= $i+1 ?></td>
                         <td><?= ($r["anonym"] && !$isOwner) ? "anonym" : htmlspecialchars($r["username"]) ?></td>
                         <td><?= (int)$r["score"] ?></td>

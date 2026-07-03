@@ -391,7 +391,7 @@ function endGame() {
     const score = GAME_MODE === 1 ? correct : maxStreak;
     fetch("../backend/save_game.php", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({game_mode: GAME_MODE===1?1:2, time_seconds:TIME_LIMIT,
+        body: JSON.stringify({game_mode: GAME_MODE, time_seconds:TIME_LIMIT,
             q_answered:correct+wrong, q_correct:correct, q_wrong:wrong,
             q_skipped:0, streak:maxStreak, score})
     });
