@@ -17,12 +17,13 @@ $classMsg = "";
 // Student: join class
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["join_code"])) {
     $result = joinClassByCode($pdo, $_POST["join_code"], $_SESSION["user_id"]);
-    $classMsg = match($result) {
+    $classMsgMap = [
         'not_found'      => "Kód třídy nebyl nalezen.",
         'already_member' => "Jsi už v této třídě.",
         'is_teacher'     => "Nemůžeš vstoupit do vlastní třídy.",
-        default          => "" // success — redirect to clear POST
-    };
+    ];
+    // success ($result is an int class id) falls through to "" and redirects below
+    $classMsg = (is_string($result) && isset($classMsgMap[$result])) ? $classMsgMap[$result] : "";
     if (is_int($result)) {
         header("Location: mainMenu.php");
         exit;

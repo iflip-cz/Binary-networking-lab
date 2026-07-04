@@ -111,7 +111,8 @@ $initial = strtoupper(substr($user["username"], 0, 1));
                 <span>Streak</span>
             </div>
             <?php foreach ($history as $g):
-                $mode = match((int)$g["Gm"]) { 1 => "Time Attack", 3 => "Streak", default => "Training" };
+                $gm = (int)$g["Gm"];
+                $mode = $gm === 1 ? "Time Attack" : ($gm === 3 ? "Streak" : "Training");
             ?>
             <div class="h-row">
                 <span class="h-date"><?= htmlspecialchars($g["When_Played"]) ?></span>

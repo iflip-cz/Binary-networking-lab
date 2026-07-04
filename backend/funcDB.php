@@ -409,11 +409,11 @@ function getClassById($pdo, $id_class) {
  * $type: 'time_attack' | 'streak' | 'total_correct'
  */
 function getClassLeaderboard($pdo, $id_class, $type = 'time_attack', $limit = 30) {
-    $col = match($type) {
-        'streak'        => 'u.highscore_2gm',
-        'total_correct' => 'u.Q_correct',
-        default         => 'u.highscore_1gm',
-    };
+    switch ($type) {
+        case 'streak':        $col = 'u.highscore_2gm'; break;
+        case 'total_correct': $col = 'u.Q_correct';     break;
+        default:              $col = 'u.highscore_1gm';
+    }
 
     $stmt = $pdo->prepare("
         SELECT u.username, u.anonym, u.highscore_1gm, u.highscore_2gm,
