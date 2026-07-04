@@ -31,6 +31,7 @@ $wrong    = (int)($data["q_wrong"]      ?? 0);
 $skipped  = (int)($data["q_skipped"]    ?? 0);
 $streak   = (int)($data["streak"]       ?? 0);
 $score    = (int)($data["score"]        ?? 0);
+$sysType  = in_array($data["sys_type"] ?? "all", ["all", "bin", "hex", "oct"], true) ? $data["sys_type"] : "all";
 
 // ── Server-side sanity checks (anti-cheat) ───────────────────
 // The game runs in the browser, so results can't be fully trusted. We can't
@@ -69,6 +70,7 @@ $userId = (int)$_SESSION["user_id"];
 insertGameHistory($pdo, [
     "user_id"      => $userId,
     "game_mode"    => $gameMode,
+    "sys_type"     => $sysType,
     "time_seconds" => $timeSec,
     "q_answered"   => $answered,
     "q_correct"    => $correct,

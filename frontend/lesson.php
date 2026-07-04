@@ -129,7 +129,7 @@ const POOLS = {
     bin: ["bin2dec","dec2bin"],
     hex: ["hex2dec","dec2hex","bin2hex","hex2bin"],
     oct: ["oct2dec","dec2oct"]
-}
+} 
 
 function pickType() {
     const pool = TRAIN_TYPE === "all"
@@ -405,7 +405,7 @@ function buildResultPayload() {
     const score = GAME_MODE === 1 ? correct : maxStreak;
     return JSON.stringify({game_mode: GAME_MODE, time_seconds: TIME_LIMIT,
         q_answered: correct + wrong, q_correct: correct, q_wrong: wrong,
-        q_skipped: 0, streak: maxStreak, score});
+        q_skipped: 0, streak: maxStreak, score, sys_type: TRAIN_TYPE});
 }
 
 let gameSaved = false;

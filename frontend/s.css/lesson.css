@@ -105,7 +105,7 @@ header h2 {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
 }
 
@@ -150,7 +150,14 @@ header h2 {
 }
 @keyframes pulse { from { opacity: 1; } to { opacity: .4; } }
 
-.streak-hud { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.streak-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+}
 
 #streak-count {
     font-family: "JetBrains Mono", monospace;

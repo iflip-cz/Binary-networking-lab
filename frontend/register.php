@@ -127,6 +127,13 @@ function checkMatch() {
     matchEl.textContent = ok ? '✓ Hesla se shodují' : '✗ Hesla se neshodují';
     matchEl.className = 'pw-match ' + (ok ? 'ok' : 'err');
 }
+
+// Optimistic submit: switch the button to a working state the moment you submit.
+const regForm = document.querySelector('form');
+if (regForm) regForm.addEventListener('submit', () => {
+    const b = regForm.querySelector('input[type="submit"]');
+    if (b) { b.value = 'Registruji…'; b.classList.add('loading'); setTimeout(() => { b.disabled = true; }, 0); }
+});
 </script>
 </body>
 </html>

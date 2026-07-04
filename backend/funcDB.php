@@ -127,19 +127,20 @@ function addUserStats($pdo, $id_user, $answered, $correct) {
  * A player's entry is their best correct-count in a round of that exact length,
  * so a 120 s run never competes against a 30 s run.
  */
-function getTimeAttackLeaderboard($pdo, $seconds, $limit = 10) {
+function getTimeAttackLeaderboard($pdo, $seconds, $sysType = 'all', $limit = 10) {
     $timeStr = gmdate("H:i:s", (int)$seconds);   // 30 -> "00:00:30"
     $stmt = $pdo->prepare("
         SELECT u.username, u.anonym, MAX(gh.Q_AC) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
-        WHERE gh.Gm = 1 AND gh.Time = :t
+        WHERE gh.Gm = 1 AND gh.Time = :t AND gh.sys_type = :sys
         GROUP BY u.ID_user, u.username, u.anonym
         HAVING highscore > 0
         ORDER BY highscore DESC
         LIMIT :lim
     ");
     $stmt->bindValue(':t',   $timeStr);
+    $stmt->bindValue(':sys', $sysType);
     $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
@@ -148,17 +149,18 @@ function getTimeAttackLeaderboard($pdo, $seconds, $limit = 10) {
 /**
  * Streak Challenge leaderboard: each player's best streak (Gm = 3).
  */
-function getStreakLeaderboard($pdo, $limit = 10) {
+function getStreakLeaderboard($pdo, $sysType = 'all', $limit = 10) {
     $stmt = $pdo->prepare("
         SELECT u.username, u.anonym, MAX(gh.streak) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
-        WHERE gh.Gm = 3
+        WHERE gh.Gm = 3 AND gh.sys_type = :sys
         GROUP BY u.ID_user, u.username, u.anonym
         HAVING highscore > 0
         ORDER BY highscore DESC
         LIMIT :lim
     ");
+    $stmt->bindValue(':sys', $sysType);
     $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
@@ -176,13 +178,16 @@ function getStreakLeaderboard($pdo, $limit = 10) {
 function insertGameHistory($pdo, $data) {
     // Convert seconds integer → TIME string 'HH:MM:SS'
     $timeStr = gmdate("H:i:s", (int)$data["time_seconds"]);
+    $sysType = in_array($data["sys_type"] ?? "all", ["all", "bin", "hex", "oct"], true)
+        ? $data["sys_type"] : "all";
 
     $stmt = $pdo->prepare("
-        INSERT INTO game_history (Gm, Q_A, Q_AC, Q_AW, Q_AS, Time, Who, When_Played, streak)
-        VALUES (?,   ?,    ?,    ?,    ?,    ?,       ?,   CURDATE(),   ?)
+        INSERT INTO game_history (Gm, sys_type, Q_A, Q_AC, Q_AW, Q_AS, Time, Who, When_Played, streak)
+        VALUES (?,  ?,        ?,    ?,    ?,    ?,    ?,    ?,   CURDATE(),   ?)
     ");
     $stmt->execute([
         $data["game_mode"],
+        $sysType,
         $data["q_answered"],
         $data["q_correct"],
         $data["q_wrong"],

@@ -42,5 +42,14 @@ if (isset($_SESSION["user_id"])) {
     <span class="sep">·</span>
     <a href="register.php">Registrace</a>
 </footer>
+
+<script>
+    // Optimistic submit: switch the button to a working state the moment you submit.
+    const loginForm = document.querySelector('form');
+    if (loginForm) loginForm.addEventListener('submit', () => {
+        const b = loginForm.querySelector('input[type="submit"]');
+        if (b) { b.value = 'Přihlašuji…'; b.classList.add('loading'); setTimeout(() => { b.disabled = true; }, 0); }
+    });
+</script>
 </body>
 </html>

@@ -498,6 +498,21 @@ tr.highlight td:nth-child(2)::after {
 .lb-tab:hover { color: var(--tx-0); background: var(--bg-3); }
 .lb-tab.active { color: var(--ac); border-color: var(--ac-border); background: var(--ac-dim); }
 
+/* Number-system filter (vše / bin / hex / oct) */
+.lb-filter { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.lb-filter-label {
+    font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--tx-2); margin-right: 4px;
+}
+.lb-fbtn {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--tx-2);
+    background: transparent; border: 1px solid var(--border);
+    padding: 3px 12px; border-radius: 7px; cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+}
+.lb-fbtn:hover  { color: var(--tx-0); border-color: var(--ac-border); }
+.lb-fbtn.active { color: var(--ac); border-color: var(--ac-border); background: var(--ac-dim); }
+
 .lb-table-wrap { animation: fade-in .18s ease; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 

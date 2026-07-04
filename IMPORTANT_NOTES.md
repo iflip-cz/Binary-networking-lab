@@ -10,6 +10,8 @@ Tento soubor shrnuje, co je hotové a co ještě zbývá.
   oprava délek sloupců **už je aplikovaná** (dřív hrozilo tiché selhání registrace).
 - ✅ Název databáze `projekt_zwa` odpovídá `backend/funcDB.php` → `connectDB()`.
 - ✅ Tabulka `achivements` je naplněná — viz `backend/seed_achievements.sql`.
+- ⚠️ Po nasazení spusť `backend/migration_add_sys_type.sql` — přidá sloupec
+  `game_history.sys_type`, aby šel žebříček filtrovat podle soustavy (bin/hex/oct).
 
 ---
 
