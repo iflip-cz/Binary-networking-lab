@@ -34,6 +34,7 @@ $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
                 <div class="streak-now" id="streak-count">0</div>
                 <div class="streak-best">best <span id="streak-best">0</span></div>
             </div>
+            <button id="btn-stop" onclick="endGame()">[ konec ]</button>
         <?php else: ?>
             <button id="btn-stop" onclick="endGame()">[ stop ]</button>
         <?php endif; ?>
@@ -128,7 +129,7 @@ const POOLS = {
     bin: ["bin2dec","dec2bin"],
     hex: ["hex2dec","dec2hex","bin2hex","hex2bin"],
     oct: ["oct2dec","dec2oct"]
-};
+}
 
 function pickType() {
     const pool = TRAIN_TYPE === "all"
@@ -396,18 +397,42 @@ function endGame() {
     document.getElementById("result-streak").textContent  = maxStreak;
     if (GAME_MODE === 1) document.getElementById("result-streak-line").style.display = "none";
     document.getElementById("overlay-gameover").classList.remove("hidden");
-    if (GAME_MODE === 2) return;
+    saveGame();
+}
+
+// One payload builder so the overlay-save and the leave-save always agree.
+function buildResultPayload() {
     const score = GAME_MODE === 1 ? correct : maxStreak;
+    return JSON.stringify({game_mode: GAME_MODE, time_seconds: TIME_LIMIT,
+        q_answered: correct + wrong, q_correct: correct, q_wrong: wrong,
+        q_skipped: 0, streak: maxStreak, score});
+}
+
+let gameSaved = false;
+function saveGame() {
+    // Training Lab (mode 2) never saves; skip an untouched game too.
+    if (gameSaved || GAME_MODE === 2 || (correct + wrong) === 0) return;
+    gameSaved = true;
     fetch("../backend/save_game.php", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({game_mode: GAME_MODE, time_seconds:TIME_LIMIT,
-            q_answered:correct+wrong, q_correct:correct, q_wrong:wrong,
-            q_skipped:0, streak:maxStreak, score})
+        body: buildResultPayload()
     })
     .then(r => r.json())
     .then(showNewAchievements)
     .catch(() => {});
 }
+
+// Streak Challenge has no timer and no forced end, so if the player leaves
+// mid-run (back to menu, closes the tab) still save their best streak.
+window.addEventListener('pagehide', () => {
+    if (GAME_MODE === 3 && !gameSaved && (correct + wrong) > 0) {
+        gameSaved = true;
+        navigator.sendBeacon(
+            "../backend/save_game.php",
+            new Blob([buildResultPayload()], {type: "application/json"})
+        );
+    }
+});
 
 // Show any badges unlocked by this game on the game-over overlay.
 function showNewAchievements(resp) {

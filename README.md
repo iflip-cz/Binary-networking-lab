@@ -27,8 +27,9 @@ studentů.
 ## Struktura
 ```
 project/
-├── frontend/          ← stránky, které vidí uživatel
-│   ├── index.php  login.php  register.php
+├── index.php          ← landing page (kořen webu = tato stránka)
+├── frontend/          ← ostatní stránky, které vidí uživatel
+│   ├── login.php  register.php
 │   ├── mainMenu.php  profil.php  lesson.php  class_view.php
 │   └── s.css/         ← CSS (jeden soubor na stránku)
 ├── backend/           ← PHP logika + přístup k DB
@@ -49,7 +50,7 @@ project/
    ```
 4. V `backend/funcDB.php` nastav v `connectDB()` správný název databáze
    (`dbname=...`), případně uživatele a heslo.
-5. Otevři v prohlížeči: `http://localhost/project/frontend/index.php`
+5. Otevři v prohlížeči: `http://localhost/project/` (kořen načte `index.php`)
 
 ## Session proměnné
 | Klíč | Význam |

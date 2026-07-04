@@ -38,7 +38,7 @@ if (isset($_SESSION["user_id"])) {
 <footer class="page-footer">
     <span>© 2026 Binary Networking Lab</span>
     <span class="sep">·</span>
-    <a href="index.php">Úvod</a>
+    <a href="../index.php">Úvod</a>
     <span class="sep">·</span>
     <a href="register.php">Registrace</a>
 </footer>

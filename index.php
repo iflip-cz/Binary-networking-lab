@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION["user_id"])) {
-    header("Location: mainMenu.php");
+    header("Location: frontend/mainMenu.php");
     exit;
 }
 ?>
@@ -11,7 +11,7 @@ if (isset($_SESSION["user_id"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
-    <link rel="stylesheet" href="s.css/index.css">
+    <link rel="stylesheet" href="frontend/s.css/index.css">
     <title>Binary Networking Lab</title>
 </head>
 <body>
@@ -47,8 +47,8 @@ if (isset($_SESSION["user_id"])) {
     </article>
 
     <footer>
-        <input type="button" value="Přihlásit se"  onclick="window.location.href='login.php'">
-        <input type="button" value="Zaregistrovat se" onclick="window.location.href='register.php'">
+        <input type="button" value="Přihlásit se"  onclick="window.location.href='frontend/login.php'">
+        <input type="button" value="Zaregistrovat se" onclick="window.location.href='frontend/register.php'">
     </footer>
 
     <script>
@@ -67,9 +67,9 @@ if (isset($_SESSION["user_id"])) {
     <footer class="page-footer">
     <span>© 2026 Binary Networking Lab</span>
     <span class="sep">·</span>
-    <a href="login.php">Přihlásit se</a>
+    <a href="frontend/login.php">Přihlásit se</a>
     <span class="sep">·</span>
-    <a href="register.php">Registrace</a>
+    <a href="frontend/register.php">Registrace</a>
 </footer>
 </body>
 </html>

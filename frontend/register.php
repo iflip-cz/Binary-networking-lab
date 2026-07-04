@@ -78,7 +78,7 @@ $errorCode = $_GET["error"] ?? "";
 <footer class="page-footer">
     <span>© 2026 Binary Networking Lab</span>
     <span class="sep">·</span>
-    <a href="index.php">Úvod</a>
+    <a href="../index.php">Úvod</a>
     <span class="sep">·</span>
     <a href="login.php">Přihlásit se</a>
 </footer>
