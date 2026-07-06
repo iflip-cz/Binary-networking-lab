@@ -34,9 +34,9 @@ $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
                 <div class="streak-now" id="streak-count">0</div>
                 <div class="streak-best">best <span id="streak-best">0</span></div>
             </div>
-            <button id="btn-stop" onclick="endGame()">[ konec ]</button>
+            <button id="btn-stop" onclick="endGame()">Ukončit</button>
         <?php else: ?>
-            <button id="btn-stop" onclick="endGame()">[ stop ]</button>
+            <button id="btn-stop" onclick="endGame()">Ukončit</button>
         <?php endif; ?>
     </div>
 </header>

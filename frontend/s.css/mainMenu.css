@@ -479,6 +479,11 @@ tr.highlight td:nth-child(2)::after {
 /* ── Leaderboard tabs ───────────────────────────────── */
 .leaderboard-section { display: flex; flex-direction: column; }
 
+.lb-title { margin-bottom: 14px; }
+/* Mode tabs and the system filter stacked together, so switching one then the
+   other is a tiny mouse move. */
+.lb-controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+
 .lb-header {
     display: flex; align-items: center;
     justify-content: space-between;
@@ -487,7 +492,7 @@ tr.highlight td:nth-child(2)::after {
 }
 .lb-header h2 { margin-bottom: 0; }
 
-.lb-tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+.lb-tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
 
 .lb-tab {
     font-family: var(--sans); font-size: 0.78rem; font-weight: 500;
@@ -499,7 +504,7 @@ tr.highlight td:nth-child(2)::after {
 .lb-tab.active { color: var(--ac); border-color: var(--ac-border); background: var(--ac-dim); }
 
 /* Number-system filter (vše / bin / hex / oct) */
-.lb-filter { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.lb-filter { display: flex; align-items: center; gap: 6px; margin-bottom: 0; flex-wrap: wrap; }
 .lb-filter-label {
     font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: var(--tx-2); margin-right: 4px;

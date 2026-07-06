@@ -99,22 +99,21 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
 
     <!-- ── Leaderboards (Time Attack per duration + Streak, filterable by system) ── -->
     <section class="leaderboard-section">
-        <div class="lb-header">
-            <h2>Leaderboard</h2>
+        <h2 class="lb-title">Leaderboard</h2>
+        <div class="lb-controls">
             <div class="lb-tabs">
                 <button class="lb-tab active" data-kind="ta" data-seconds="30">TA 30s</button>
                 <button class="lb-tab" data-kind="ta" data-seconds="60">TA 60s</button>
                 <button class="lb-tab" data-kind="ta" data-seconds="120">TA 120s</button>
                 <button class="lb-tab" data-kind="streak">Streak</button>
             </div>
-        </div>
-
-        <div class="lb-filter">
-            <span class="lb-filter-label">soustava</span>
-            <button class="lb-fbtn active" data-sys="all">vše</button>
-            <button class="lb-fbtn" data-sys="bin">bin</button>
-            <button class="lb-fbtn" data-sys="hex">hex</button>
-            <button class="lb-fbtn" data-sys="oct">oct</button>
+            <div class="lb-filter">
+                <span class="lb-filter-label">soustava</span>
+                <button class="lb-fbtn active" data-sys="all">vše</button>
+                <button class="lb-fbtn" data-sys="bin">bin</button>
+                <button class="lb-fbtn" data-sys="hex">hex</button>
+                <button class="lb-fbtn" data-sys="oct">oct</button>
+            </div>
         </div>
 
         <div id="lb-body" class="lb-table-wrap">

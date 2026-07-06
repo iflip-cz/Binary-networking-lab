@@ -4,6 +4,8 @@ if (isset($_SESSION["user_id"])) {
     header("Location: mainMenu.php");
     exit;
 }
+$oldUsername = $_SESSION["login_old_username"] ?? "";
+unset($_SESSION["login_old_username"]);
 ?>
 <!doctype html>
 <html lang="cs">
@@ -21,7 +23,8 @@ if (isset($_SESSION["user_id"])) {
 
 <form method="post" action="../backend/login_process.php">
     <label for="username">Uživatelské jméno</label>
-    <input type="text" id="username" name="username" placeholder=" " required autofocus>
+    <input type="text" id="username" name="username" placeholder=" " required autofocus
+           value="<?= htmlspecialchars($oldUsername) ?>">
 
     <label for="password">Heslo</label>
     <input type="password" id="password" name="password" placeholder=" " required>
@@ -50,6 +53,8 @@ if (isset($_SESSION["user_id"])) {
         const b = loginForm.querySelector('input[type="submit"]');
         if (b) { b.value = 'Přihlašuji…'; b.classList.add('loading'); setTimeout(() => { b.disabled = true; }, 0); }
     });
+    // Login failed: username is prefilled, so put the cursor on the password.
+    <?php if (isset($_GET["error"])): ?>document.getElementById('password').focus();<?php endif; ?>
 </script>
 </body>
 </html>

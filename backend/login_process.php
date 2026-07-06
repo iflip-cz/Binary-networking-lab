@@ -11,6 +11,9 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $username = trim($_POST["username"] ?? "");
 $password = $_POST["password"] ?? "";
 
+// Keep the typed username so a failed login can refill it (password is never kept).
+$_SESSION["login_old_username"] = $username;
+
 if ($username === "" || $password === "") {
     header("Location: ../frontend/login.php?error=1");
     exit;
@@ -26,6 +29,7 @@ if ($user && password_verify($password, $user["password"])) {
     $_SESSION["username"] = $user["username"];
     $_SESSION["teacher"]  = (int)$user["teacher"];   // 1 = admin/teacher, 0 = student
     $_SESSION["anonym"]   = (int)$user["anonym"];    // 1 = hide name on leaderboard
+    unset($_SESSION["login_old_username"]);
 
     header("Location: ../frontend/mainMenu.php");
     exit;

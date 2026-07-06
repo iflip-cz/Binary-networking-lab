@@ -3,6 +3,7 @@
 Kompletní setup a spuštění je v [README.md](README.md).
 Tento soubor shrnuje, co je hotové a co ještě zbývá.
 
+
 ---
 
 ## Stav databáze
@@ -59,3 +60,4 @@ Tento soubor shrnuje, co je hotové a co ještě zbývá.
   doplnit „přeskočené" otázky do hry, nebo sloupec odstranit.
 - (Ke zvážení) Role „učitel" jde při registraci zvolit zaškrtávátkem. Je to záměr,
   ale pro ostrý provoz by dávalo smysl schvalování učitelů.
+

@@ -151,6 +151,10 @@ input[type="password"]:focus {
     box-shadow: 0 0 0 3px var(--ac-dim);
 }
 
+/* Field flagged as the source of a submit error */
+input.input-error { border-color: var(--red) !important; }
+input.input-error:focus { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(248,113,113,.15); }
+
 /* Filled but not focused */
 input[type="text"]:not(:placeholder-shown):not(:focus),
 input[type="email"]:not(:placeholder-shown):not(:focus),

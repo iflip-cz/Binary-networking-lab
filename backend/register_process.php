@@ -36,6 +36,9 @@ $email            = trim($_POST["email"]            ?? "");
 $password         = $_POST["password"]              ?? "";
 $confirm_password = $_POST["confirm_password"]      ?? "";
 
+// Remember the non-password fields so an error reload can refill them.
+$_SESSION["reg_old"] = compact("username", "name", "surname", "email");
+
 // ── 1. All fields must be filled ─────────────────────────────
 if ($username === "" || $name === "" || $surname === "" ||
     $email    === "" || $password === "") {
@@ -77,6 +80,7 @@ $_SESSION["user_id"]  = $newId;
 $_SESSION["username"] = $username;
 $_SESSION["teacher"]  = isset($_POST['is_teacher']) ? 1 : 0;
 $_SESSION["anonym"]   = 0;
+unset($_SESSION["reg_old"]);
 
 header("Location: ../frontend/mainMenu.php");
 exit;

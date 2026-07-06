@@ -128,19 +128,20 @@ function addUserStats($pdo, $id_user, $answered, $correct) {
  * so a 120 s run never competes against a 30 s run.
  */
 function getTimeAttackLeaderboard($pdo, $seconds, $sysType = 'all', $limit = 10) {
-    $timeStr = gmdate("H:i:s", (int)$seconds);   // 30 -> "00:00:30"
+    $timeStr   = gmdate("H:i:s", (int)$seconds);   // 30 -> "00:00:30"
+    $filterSys = $sysType !== 'all';               // 'all' = every system combined
     $stmt = $pdo->prepare("
         SELECT u.username, u.anonym, MAX(gh.Q_AC) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
-        WHERE gh.Gm = 1 AND gh.Time = :t AND gh.sys_type = :sys
+        WHERE gh.Gm = 1 AND gh.Time = :t" . ($filterSys ? " AND gh.sys_type = :sys" : "") . "
         GROUP BY u.ID_user, u.username, u.anonym
         HAVING highscore > 0
         ORDER BY highscore DESC
         LIMIT :lim
     ");
-    $stmt->bindValue(':t',   $timeStr);
-    $stmt->bindValue(':sys', $sysType);
+    $stmt->bindValue(':t', $timeStr);
+    if ($filterSys) $stmt->bindValue(':sys', $sysType);
     $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
@@ -150,17 +151,18 @@ function getTimeAttackLeaderboard($pdo, $seconds, $sysType = 'all', $limit = 10)
  * Streak Challenge leaderboard: each player's best streak (Gm = 3).
  */
 function getStreakLeaderboard($pdo, $sysType = 'all', $limit = 10) {
+    $filterSys = $sysType !== 'all';               // 'all' = every system combined
     $stmt = $pdo->prepare("
         SELECT u.username, u.anonym, MAX(gh.streak) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
-        WHERE gh.Gm = 3 AND gh.sys_type = :sys
+        WHERE gh.Gm = 3" . ($filterSys ? " AND gh.sys_type = :sys" : "") . "
         GROUP BY u.ID_user, u.username, u.anonym
         HAVING highscore > 0
         ORDER BY highscore DESC
         LIMIT :lim
     ");
-    $stmt->bindValue(':sys', $sysType);
+    if ($filterSys) $stmt->bindValue(':sys', $sysType);
     $stmt->bindValue(':lim', (int)$limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();

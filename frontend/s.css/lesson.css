@@ -105,7 +105,7 @@ header h2 {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     flex-shrink: 0;
 }
 
@@ -171,18 +171,21 @@ header h2 {
 .streak-best { font-family: "Outfit", sans-serif; font-size: 0.62rem; color: var(--tx-2); }
 .streak-best span { font-family: "JetBrains Mono", monospace; color: var(--tx-1); }
 
+/* End-game action — sans + filled accent so it reads as a real action, clearly
+   heavier than the subtle mono [ light ] theme toggle next to it. */
 #btn-stop {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.7rem;
-    color: var(--tx-2);
-    background: transparent;
-    border: 1px solid var(--border);
-    padding: 5px 10px;
-    border-radius: 6px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ac);
+    background: var(--ac-dim);
+    border: 1px solid var(--ac-border);
+    padding: 5px 14px;
+    border-radius: 7px;
     cursor: pointer;
-    transition: color .15s, border-color .15s;
+    transition: background .15s, border-color .15s, color .15s;
 }
-#btn-stop:hover { color: var(--red); border-color: rgba(220,38,38,.3); }
+#btn-stop:hover { background: var(--ac); color: var(--bg-1); border-color: var(--ac); }
 
 /* ── Game area ──────────────────────────────────────── */
 #game-area {

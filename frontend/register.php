@@ -12,6 +12,12 @@ $errorMessages = [
     "exists_email"    => "Tento e-mail je již zaregistrovaný.",
 ];
 $errorCode = $_GET["error"] ?? "";
+
+$old      = $_SESSION["reg_old"] ?? [];
+unset($_SESSION["reg_old"]);
+$errUser  = $errorCode === "exists_username";
+$errEmail = $errorCode === "exists_email";
+$errPass  = $errorCode === "password";
 ?>
 <!doctype html>
 <html lang="cs">
@@ -30,19 +36,23 @@ $errorCode = $_GET["error"] ?? "";
 <form method="post" action="../backend/register_process.php">
 
     <label for="username">Uživatelské jméno</label>
-    <input type="text" id="username" name="username" placeholder=" " maxlength="20" required autofocus>
+    <input type="text" id="username" name="username" placeholder=" " maxlength="20" required autofocus
+           value="<?= htmlspecialchars($old['username'] ?? '') ?>"<?= $errUser ? ' class="input-error"' : '' ?>>
 
     <label for="name">Jméno</label>
-    <input type="text" id="name" name="name" placeholder=" " maxlength="20" required>
+    <input type="text" id="name" name="name" placeholder=" " maxlength="20" required
+           value="<?= htmlspecialchars($old['name'] ?? '') ?>">
 
     <label for="surname">Příjmení</label>
-    <input type="text" id="surname" name="surname" placeholder=" " maxlength="20" required>
+    <input type="text" id="surname" name="surname" placeholder=" " maxlength="20" required
+           value="<?= htmlspecialchars($old['surname'] ?? '') ?>">
 
     <label for="email">E-mail</label>
-    <input type="email" id="email" name="email" placeholder=" " maxlength="100" required>
+    <input type="email" id="email" name="email" placeholder=" " maxlength="100" required
+           value="<?= htmlspecialchars($old['email'] ?? '') ?>"<?= $errEmail ? ' class="input-error"' : '' ?>>
 
     <label for="password">Heslo</label>
-    <input type="password" id="password" name="password" placeholder=" " required>
+    <input type="password" id="password" name="password" placeholder=" " required<?= $errPass ? ' class="input-error"' : '' ?>>
 
     <!-- Live strength widget (shown as soon as user starts typing) -->
     <div class="pw-strength-wrap" id="pw-strength-wrap">
@@ -57,7 +67,7 @@ $errorCode = $_GET["error"] ?? "";
 
     <label for="confirm_password">Potvrzení hesla</label>
 
-    <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required>
+    <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required<?= $errPass ? ' class="input-error"' : '' ?>>
     <p class="pw-match" id="pw-match"></p>
 <div class="form-group">
     <label>
@@ -134,6 +144,10 @@ if (regForm) regForm.addEventListener('submit', () => {
     const b = regForm.querySelector('input[type="submit"]');
     if (b) { b.value = 'Registruji…'; b.classList.add('loading'); setTimeout(() => { b.disabled = true; }, 0); }
 });
+
+// Put the cursor on the flagged field after a failed submit.
+const firstErr = document.querySelector('.input-error');
+if (firstErr) firstErr.focus();
 </script>
 </body>
 </html>
