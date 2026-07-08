@@ -15,7 +15,7 @@
 
     --tx-0: #e8eaf2;
     --tx-1: #8890a8;
-    --tx-2: #4a5068;
+    --tx-2: #6b7390;
 
     --red:   #f87171;
     --green: #34d399;
@@ -368,7 +368,7 @@ h2 {
     grid-template-columns: 110px 1fr 80px 80px 80px;
     align-items: center;
     padding: 13px 20px;
-    border-bottom: 1px solid rgba(37,42,56,.4);
+    border-bottom: 1px solid var(--border);
     gap: 8px;
     transition: background .12s;
 }
@@ -425,3 +425,12 @@ h2 {
 .page-footer a { color: var(--tx-2); text-decoration: none; transition: color .14s; }
 .page-footer a:hover { color: var(--ac); }
 .page-footer .sep { opacity: 0.3; }
+/* ── Polish: motion & touch ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+* { -webkit-tap-highlight-color: transparent; }

@@ -57,6 +57,10 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu — Binary Networking Lab</title>
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
+    <meta name="theme-color" content="#0d0f14">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23f97316%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%230d0f14%22>01</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="s.css/mainMenu.css">
 </head>
 <body>
@@ -107,12 +111,14 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
                 <button class="lb-tab" data-kind="ta" data-seconds="120">TA 120s</button>
                 <button class="lb-tab" data-kind="streak">Streak</button>
             </div>
-            <div class="lb-filter">
+            <div class="lb-filter" role="group" aria-label="Filtr číselné soustavy">
                 <span class="lb-filter-label">soustava</span>
-                <button class="lb-fbtn active" data-sys="all">vše</button>
-                <button class="lb-fbtn" data-sys="bin">bin</button>
-                <button class="lb-fbtn" data-sys="hex">hex</button>
-                <button class="lb-fbtn" data-sys="oct">oct</button>
+                <div class="lb-seg">
+                    <button class="lb-fbtn active" data-sys="all" aria-pressed="true">vše</button>
+                    <button class="lb-fbtn" data-sys="bin" aria-pressed="false">bin</button>
+                    <button class="lb-fbtn" data-sys="hex" aria-pressed="false">hex</button>
+                    <button class="lb-fbtn" data-sys="oct" aria-pressed="false">oct</button>
+                </div>
             </div>
         </div>
 
@@ -251,13 +257,17 @@ document.getElementById('theme-toggle').addEventListener('click', function() {
 
 // ── Leaderboard (tabs + number-system filter, loaded from backend) ──
 const ME = <?= json_encode($_SESSION['username']) ?>;
-let lbKind = 'ta', lbSeconds = 30, lbSys = 'all';
+// Remember the last viewed board across page loads (e.g. returning from a game).
+let lbKind    = sessionStorage.getItem('lbKind') || 'ta';
+let lbSeconds = parseInt(sessionStorage.getItem('lbSeconds') || '30');
+let lbSys     = sessionStorage.getItem('lbSys')  || 'all';
+const lbBody  = document.getElementById('lb-body');
 
 function lbEsc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function lbRender(rows) {
     const metric = lbKind === 'streak' ? 'Streak' : 'Skóre';
-    if (!rows.length) return '<p class="empty-state">Zatím žádné záznamy.</p>';
+    if (!rows.length) return '<p class="empty-state">Zatím žádné záznamy — zahraj si a buď první.</p>';
     let h = '<table><thead><tr><th>#</th><th>Hráč</th><th>' + metric + '</th></tr></thead><tbody>';
     rows.forEach((r, i) => {
         const name = Number(r.anonym) ? 'anonym' : lbEsc(r.username);
@@ -268,31 +278,59 @@ function lbRender(rows) {
 }
 
 function lbLoad() {
+    sessionStorage.setItem('lbKind', lbKind);
+    sessionStorage.setItem('lbSeconds', lbSeconds);
+    sessionStorage.setItem('lbSys', lbSys);
+    lbBody.classList.add('lb-loading');
+    lbBody.setAttribute('aria-busy', 'true');
     const p = new URLSearchParams({ kind: lbKind, sys: lbSys });
     if (lbKind === 'ta') p.set('seconds', lbSeconds);
     fetch('../backend/leaderboard.php?' + p.toString())
-        .then(r => r.json())
-        .then(rows => { document.getElementById('lb-body').innerHTML = lbRender(rows); })
-        .catch(() => {});
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(rows => { lbBody.innerHTML = lbRender(rows); })
+        .catch(() => {
+            lbBody.innerHTML = '<p class="empty-state">Žebříček se nepodařilo načíst — zkus přepnout záložku.</p>';
+        })
+        .finally(() => {
+            lbBody.classList.remove('lb-loading');
+            lbBody.removeAttribute('aria-busy');
+        });
+}
+
+function lbSyncButtons() {
+    document.querySelectorAll('.lb-tab').forEach(t => {
+        const isActive = t.dataset.kind === lbKind &&
+            (lbKind !== 'ta' || parseInt(t.dataset.seconds) === lbSeconds);
+        t.classList.toggle('active', isActive);
+    });
+    document.querySelectorAll('.lb-fbtn').forEach(b => {
+        const isActive = b.dataset.sys === lbSys;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-pressed', isActive);
+    });
 }
 
 document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
         lbKind = tab.dataset.kind;
         if (lbKind === 'ta') lbSeconds = parseInt(tab.dataset.seconds);
+        lbSyncButtons();
         lbLoad();
     });
 });
 document.querySelectorAll('.lb-fbtn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.lb-fbtn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         lbSys = btn.dataset.sys;
+        lbSyncButtons();
         lbLoad();
     });
 });
+
+// Restore the remembered view (server renders TA-30s/vše by default).
+if (lbKind !== 'ta' || lbSeconds !== 30 || lbSys !== 'all') {
+    lbSyncButtons();
+    lbLoad();
+}
 
 // ── Game modal ────────────────────────────────────────
 const MODES = {

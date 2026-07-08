@@ -19,6 +19,10 @@ $initial = strtoupper(substr($user["username"], 0, 1));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($user["username"]) ?> — BNL</title>
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
+    <meta name="theme-color" content="#0d0f14">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23f97316%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%230d0f14%22>01</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="s.css/profil.css">
 </head>
 <body>
@@ -63,19 +67,19 @@ $initial = strtoupper(substr($user["username"], 0, 1));
         <div class="hero-bottom">
             <div class="ss">
                 <span class="ssv"><?= $accuracy ?>%</span>
-                <span class="ssl">Presnost</span>
+                <span class="ssl">Přesnost</span>
             </div>
             <div class="ss">
                 <span class="ssv"><?= (int)$user["Q_answerd"] ?></span>
-                <span class="ssl">Zodpovezeno</span>
+                <span class="ssl">Zodpovězeno</span>
             </div>
             <div class="ss">
                 <span class="ssv"><?= (int)$user["Q_correct"] ?></span>
-                <span class="ssl">Spravne</span>
+                <span class="ssl">Správně</span>
             </div>
             <div class="ss">
                 <span class="ssv"><?= max(0, (int)$user["Q_answerd"] - (int)$user["Q_correct"]) ?></span>
-                <span class="ssl">Spatne</span>
+                <span class="ssl">Špatně</span>
             </div>
         </div>
 
@@ -94,20 +98,20 @@ $initial = strtoupper(substr($user["username"], 0, 1));
             <?php endforeach; ?>
         </div>
         <?php else: ?>
-            <p class="empty">Zatim zadne — zahraj si a odemkni prvni.</p>
+            <p class="empty">Zatím žádné — zahraj si a odemkni první.</p>
         <?php endif; ?>
     </section>
 
     <!-- History -->
     <section>
-        <h2>Poslednich her <span class="count-pill"><?= count($history) ?></span></h2>
+        <h2>Posledních her <span class="count-pill"><?= count($history) ?></span></h2>
         <?php if ($history): ?>
         <div class="history">
             <div class="h-head">
                 <span>Datum</span>
-                <span>Mod</span>
-                <span>Spravne</span>
-                <span>Spatne</span>
+                <span>Mód</span>
+                <span>Správně</span>
+                <span>Špatně</span>
                 <span>Streak</span>
             </div>
             <?php foreach ($history as $g):
@@ -124,7 +128,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
             <?php endforeach; ?>
         </div>
         <?php else: ?>
-            <p class="empty">Zatim zadne hry.</p>
+            <p class="empty">Zatím žádné hry.</p>
         <?php endif; ?>
     </section>
 
@@ -135,7 +139,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
     <span class="sep">·</span>
     <a href="mainMenu.php">Menu</a>
     <span class="sep">·</span>
-    <a href="../backend/logout.php">Odhlasit se</a>
+    <a href="../backend/logout.php">Odhlásit se</a>
 </footer>
 <script>
     // Theme is applied by the inline script in <head> — no toggle button on this page.

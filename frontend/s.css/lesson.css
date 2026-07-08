@@ -16,7 +16,7 @@
 
     --tx-0: #e8eaf2;
     --tx-1: #8890a8;
-    --tx-2: #4a5068;
+    --tx-2: #6b7390;
 
     --red:   #f87171;
     --green: #34d399;
@@ -41,7 +41,7 @@
 
     --tx-0: #1c1a16;
     --tx-1: #6b6458;
-    --tx-2: #9e9080;
+    --tx-2: #7d7566;
 
     --red:   #dc2626;
     --green: #16a34a;
@@ -93,7 +93,7 @@ header {
 }
 #btn-back:hover { color: var(--tx-0); }
 
-header h2 {
+header h1 {
     font-family: "Outfit", sans-serif;
     font-size: 0.82rem;
     font-weight: 600;
@@ -504,3 +504,16 @@ header h2 {
 .overlay-btns button:first-child:hover { border-color: var(--tx-1); color: var(--tx-0); }
 .btn-primary { background: var(--ac); border: none; color: var(--bg-1); }
 .btn-primary:hover { background: var(--ac-lt); transform: translateY(-1px); }
+/* ── Polish: motion & touch ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+* { -webkit-tap-highlight-color: transparent; }
+
+@media (pointer: coarse) {
+    .theme-btn, #btn-stop, .btn-explain { min-height: 44px; }
+}

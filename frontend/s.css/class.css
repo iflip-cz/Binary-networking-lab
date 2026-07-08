@@ -36,7 +36,7 @@
 
     --tx-0: #e8eaf2; 
     --tx-1: #8890a8; 
-    --tx-2: #4a5068;
+    --tx-2: #6b7390;
 
     --red: #f87171; --green: #34d399; --gold: #fbbf24;
 }
@@ -155,7 +155,7 @@ table th {
 }
 
 table td {
-    padding: 13px 16px; border-bottom: 1px solid rgba(37,42,56,.4);
+    padding: 13px 16px; border-bottom: 1px solid var(--border);
     color: var(--tx-1); font-size: 0.85rem; transition: background .12s;
 }
 
@@ -203,3 +203,16 @@ tr.highlight td { background: var(--ac-dim) !important; }
 .page-footer a { color: var(--tx-2); text-decoration: none; transition: color .14s; }
 .page-footer a:hover { color: var(--ac); }
 .page-footer .sep { opacity: 0.3; }
+/* ── Polish: motion & touch ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+* { -webkit-tap-highlight-color: transparent; }
+
+@media (pointer: coarse) {
+    .lb-tab, .theme-btn, .rm-btn, .leave-btn { min-height: 44px; }
+}

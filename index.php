@@ -11,12 +11,16 @@ if (isset($_SESSION["user_id"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
+    <meta name="theme-color" content="#0d0f14">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23f97316%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%230d0f14%22>01</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="frontend/s.css/index.css">
     <title>Binary Networking Lab</title>
 </head>
 <body>
 
-    <h2>Binary <span class="hi">Networking</span> Lab</h2>
+    <h1>Binary <span class="hi">Networking</span> Lab</h1>
     <p class="tagline">// learn · convert · compete</p>
 
     <div class="picture-space"></div>

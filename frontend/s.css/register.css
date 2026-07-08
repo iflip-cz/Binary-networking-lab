@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -18,13 +18,13 @@
 
     --tx-0:  #ececf2;
     --tx-1:  #8e8ea0;
-    --tx-2:  #484858;
+    --tx-2:  #6a6a80;
 
     --red:   #f87171;
     --green: #34d399;
 
-    --sans: "IBM Plex Sans",  system-ui, sans-serif;
-    --mono: "IBM Plex Mono",  "Fira Code", Consolas, monospace;
+    --sans: "Outfit", system-ui, sans-serif;
+    --mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
     --r:    10px;
 }
 
@@ -44,7 +44,7 @@
 
     --tx-0:  #1c1a16;
     --tx-1:  #6b6458;
-    --tx-2:  #9e9080;
+    --tx-2:  #7d7566;
 
     --red:   #dc2626;
     --green: #16a34a;
@@ -84,7 +84,7 @@ body {
     opacity: 0.85;
 }
 
-h2 {
+h1 {
     margin: 0 0 26px;
     font-family: var(--mono);
     font-size: clamp(1.4rem, 4vh, 2rem);
@@ -217,3 +217,23 @@ a:hover { opacity: .75; }
 ::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 99px; }
 :focus-visible { outline: 2px solid var(--ac); outline-offset: 3px; }
 :focus:not(:focus-visible) { outline: none; }
+/* ── Polish: motion & touch ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+* { -webkit-tap-highlight-color: transparent; }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--tx-0);
+    -webkit-box-shadow: 0 0 0 1000px var(--bg-3) inset;
+    transition: background-color 9999s ease-out;
+}
+
+main { display: contents; }
+input[type="checkbox"] { accent-color: var(--ac); }
