@@ -7,6 +7,23 @@ $user = getUserById($pdo, $_SESSION["user_id"]);
 if (!$user) { header("Location: ../backend/logout.php"); exit; }
 
 $achievements = getUserAchievements($pdo, $_SESSION["user_id"]);
+$allBadges    = getAllAchievements($pdo);
+$ownedIds     = [];
+foreach ($achievements as $a) $ownedIds[$a["ID_achivements"]] = true;
+
+// Icon per badge, matched by Name (fallback 🏅 for anything new in the DB).
+$badgeIcons = [
+    "První hra"     => "🎮",
+    "Stovka otázek" => "💯",
+    "Tisíc otázek"  => "🧠",
+    "Přesná muška"  => "🎯",
+    "Série 10"      => "🔥",
+    "Série 25"      => "🚀",
+    "Rychloprsty"   => "⚡",
+    "Mistr převodů" => "👑",
+    "Bez chybičky"  => "✨",
+];
+
 $history      = getUserHistory($pdo, $_SESSION["user_id"], 10);
 $accuracy     = $user["Q_answerd"] > 0
     ? round($user["Q_correct"] / $user["Q_answerd"] * 100, 1) : 0;
@@ -20,7 +37,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
     <title><?= htmlspecialchars($user["username"]) ?> — BNL</title>
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
     <meta name="theme-color" content="#0d0f14">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23f97316%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%230d0f14%22>01</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230d0f14%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%23f97316%22>01</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="s.css/profil.css">
@@ -85,20 +102,32 @@ $initial = strtoupper(substr($user["username"], 0, 1));
 
     </div>
 
-    <!-- Achievements -->
+    <!-- Achievements — full gallery: earned in color, locked greyed with the unlock hint -->
     <section>
-        <h2>Achievementy <span class="count-pill"><?= count($achievements) ?></span></h2>
-        <?php if ($achievements): ?>
+        <h2>Achievementy <span class="count-pill"><?= count($achievements) ?>/<?= count($allBadges) ?></span></h2>
+        <?php if ($allBadges): ?>
         <div class="badge-grid">
-            <?php foreach ($achievements as $a): ?>
+            <?php foreach ($allBadges as $a):
+                $isOwned = isset($ownedIds[$a["ID_achivements"]]);
+                $icon    = $badgeIcons[$a["Name"]] ?? "🏅";
+            ?>
+            <?php if ($isOwned): ?>
             <div class="badge rarity-<?= htmlspecialchars($a["rarity"]) ?>">
+                <span class="badge-icon"><?= $icon ?></span>
                 <strong><?= htmlspecialchars($a["Name"]) ?></strong>
                 <span><?= htmlspecialchars($a["rarity"]) ?></span>
             </div>
+            <?php else: ?>
+            <div class="badge badge--locked" title="Zatím uzamčeno">
+                <span class="badge-icon">🔒</span>
+                <strong><?= htmlspecialchars($a["Name"]) ?></strong>
+                <span class="badge-cond"><?= htmlspecialchars($a["if_condition"]) ?></span>
+            </div>
+            <?php endif; ?>
             <?php endforeach; ?>
         </div>
         <?php else: ?>
-            <p class="empty">Zatím žádné — zahraj si a odemkni první.</p>
+            <p class="empty">Žádné achievementy nejsou v databázi — spusť backend/seed_achievements.sql.</p>
         <?php endif; ?>
     </section>
 

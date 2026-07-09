@@ -58,7 +58,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
     <title>Menu — Binary Networking Lab</title>
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('bnl-theme')||'dark');</script>
     <meta name="theme-color" content="#0d0f14">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23f97316%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%230d0f14%22>01</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230d0f14%22/><text x=%2232%22 y=%2244%22 font-family=%22monospace%22 font-size=%2230%22 font-weight=%22700%22 text-anchor=%22middle%22 fill=%22%23f97316%22>01</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="s.css/mainMenu.css">
@@ -111,14 +111,14 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
                 <button class="lb-tab" data-kind="ta" data-seconds="120">TA 120s</button>
                 <button class="lb-tab" data-kind="streak">Streak</button>
             </div>
-            <div class="lb-filter" role="group" aria-label="Filtr číselné soustavy">
-                <span class="lb-filter-label">soustava</span>
-                <div class="lb-seg">
-                    <button class="lb-fbtn active" data-sys="all" aria-pressed="true">vše</button>
-                    <button class="lb-fbtn" data-sys="bin" aria-pressed="false">bin</button>
-                    <button class="lb-fbtn" data-sys="hex" aria-pressed="false">hex</button>
-                    <button class="lb-fbtn" data-sys="oct" aria-pressed="false">oct</button>
-                </div>
+            <div class="lb-filter">
+                <label class="lb-filter-label" for="lb-sys">soustava</label>
+                <select id="lb-sys" class="lb-select">
+                    <option value="all">vše — všechny soustavy</option>
+                    <option value="bin">bin — binární</option>
+                    <option value="hex">hex — hexadecimální</option>
+                    <option value="oct">oct — oktalová</option>
+                </select>
             </div>
         </div>
 
@@ -297,17 +297,15 @@ function lbLoad() {
         });
 }
 
+const lbSysSel = document.getElementById('lb-sys');
+
 function lbSyncButtons() {
     document.querySelectorAll('.lb-tab').forEach(t => {
         const isActive = t.dataset.kind === lbKind &&
             (lbKind !== 'ta' || parseInt(t.dataset.seconds) === lbSeconds);
         t.classList.toggle('active', isActive);
     });
-    document.querySelectorAll('.lb-fbtn').forEach(b => {
-        const isActive = b.dataset.sys === lbSys;
-        b.classList.toggle('active', isActive);
-        b.setAttribute('aria-pressed', isActive);
-    });
+    lbSysSel.value = lbSys;
 }
 
 document.querySelectorAll('.lb-tab').forEach(tab => {
@@ -318,12 +316,9 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
         lbLoad();
     });
 });
-document.querySelectorAll('.lb-fbtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        lbSys = btn.dataset.sys;
-        lbSyncButtons();
-        lbLoad();
-    });
+lbSysSel.addEventListener('change', () => {
+    lbSys = lbSysSel.value;
+    lbLoad();
 });
 
 // Restore the remembered view (server renders TA-30s/vše by default).
