@@ -112,13 +112,30 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
                 <button class="lb-tab" data-kind="streak">Streak</button>
             </div>
             <div class="lb-filter">
-                <label class="lb-filter-label" for="lb-sys">soustava</label>
-                <select id="lb-sys" class="lb-select">
-                    <option value="all">vše — všechny soustavy</option>
-                    <option value="bin">bin — binární</option>
-                    <option value="hex">hex — hexadecimální</option>
-                    <option value="oct">oct — oktalová</option>
-                </select>
+                <span class="lb-filter-label" id="lb-sys-label">soustava</span>
+                <div class="lb-dd" id="lb-dd">
+                    <button type="button" class="lb-dd-btn" id="lb-dd-btn"
+                            aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lb-sys-label">
+                        <span class="dd-value" id="lb-dd-value">vše</span>
+                        <svg class="dd-arrow" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                            <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <ul class="lb-dd-menu" role="listbox" aria-labelledby="lb-sys-label">
+                        <li><button type="button" class="lb-dd-opt" role="option" data-sys="all" aria-selected="true">
+                            <span class="dd-tag">vše</span><span class="dd-desc">všechny soustavy</span><span class="dd-check">✓</span>
+                        </button></li>
+                        <li><button type="button" class="lb-dd-opt" role="option" data-sys="bin" aria-selected="false">
+                            <span class="dd-tag">bin</span><span class="dd-desc">binární</span><span class="dd-check">✓</span>
+                        </button></li>
+                        <li><button type="button" class="lb-dd-opt" role="option" data-sys="hex" aria-selected="false">
+                            <span class="dd-tag">hex</span><span class="dd-desc">hexadecimální</span><span class="dd-check">✓</span>
+                        </button></li>
+                        <li><button type="button" class="lb-dd-opt" role="option" data-sys="oct" aria-selected="false">
+                            <span class="dd-tag">oct</span><span class="dd-desc">oktalová</span><span class="dd-check">✓</span>
+                        </button></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -297,7 +314,11 @@ function lbLoad() {
         });
 }
 
-const lbSysSel = document.getElementById('lb-sys');
+// Custom dropdown — a native <select> can't theme its open list, this can.
+const lbDd     = document.getElementById('lb-dd');
+const lbDdBtn  = document.getElementById('lb-dd-btn');
+const lbDdVal  = document.getElementById('lb-dd-value');
+const lbDdOpts = Array.from(document.querySelectorAll('.lb-dd-opt'));
 
 function lbSyncButtons() {
     document.querySelectorAll('.lb-tab').forEach(t => {
@@ -305,8 +326,39 @@ function lbSyncButtons() {
             (lbKind !== 'ta' || parseInt(t.dataset.seconds) === lbSeconds);
         t.classList.toggle('active', isActive);
     });
-    lbSysSel.value = lbSys;
+    lbDdOpts.forEach(o => o.setAttribute('aria-selected', o.dataset.sys === lbSys));
+    const cur = lbDdOpts.find(o => o.dataset.sys === lbSys);
+    if (cur) lbDdVal.textContent = cur.querySelector('.dd-tag').textContent;
 }
+
+function lbDdClose() {
+    lbDd.classList.remove('open');
+    lbDdBtn.setAttribute('aria-expanded', 'false');
+}
+
+lbDdBtn.addEventListener('click', () => {
+    const open = lbDd.classList.toggle('open');
+    lbDdBtn.setAttribute('aria-expanded', open);
+    if (open) (lbDdOpts.find(o => o.dataset.sys === lbSys) || lbDdOpts[0]).focus();
+});
+
+lbDdOpts.forEach(opt => opt.addEventListener('click', () => {
+    lbSys = opt.dataset.sys;
+    lbSyncButtons();
+    lbDdClose();
+    lbDdBtn.focus();
+    lbLoad();
+}));
+
+document.addEventListener('click', e => { if (!lbDd.contains(e.target)) lbDdClose(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lbDdClose(); });
+lbDd.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const i = lbDdOpts.indexOf(document.activeElement);
+    const next = e.key === 'ArrowDown' ? Math.min(i + 1, lbDdOpts.length - 1) : Math.max(i - 1, 0);
+    lbDdOpts[next].focus();
+});
 
 document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -315,10 +367,6 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
         lbSyncButtons();
         lbLoad();
     });
-});
-lbSysSel.addEventListener('change', () => {
-    lbSys = lbSysSel.value;
-    lbLoad();
 });
 
 // Restore the remembered view (server renders TA-30s/vše by default).

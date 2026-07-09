@@ -283,7 +283,7 @@ function checkAndAwardAchievements($pdo, $id_user, $game) {
     foreach (getAllAchievements($pdo) as $a) {
         $byName[$a["Name"]] = $a["ID_achivements"];
     }
-
+    
     $awarded = [];
     foreach ($rules as $name => $met) {
         if ($met && isset($byName[$name])) {
