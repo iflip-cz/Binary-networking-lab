@@ -22,6 +22,7 @@
 
     --red:   #f87171;
     --green: #34d399;
+    --warn:  #fbbf24;
 
     --sans: "Outfit", system-ui, sans-serif;
     --mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
@@ -48,6 +49,7 @@
 
     --red:   #dc2626;
     --green: #16a34a;
+    --warn:  #b45309;
 }
 
 ::selection { background: var(--ac); color: var(--bg-0); }
@@ -190,6 +192,85 @@ form div {
 
 a { color: var(--ac); text-decoration: none; font-weight: 600; transition: opacity .15s; }
 a:hover { opacity: .75; }
+
+/* ── Live password requirements ────────────────────────── */
+/* Hidden until the user starts typing (JS adds .visible), or shown
+   immediately when the server rejected the password. */
+.pw-strength-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: -2px;
+}
+.pw-strength-wrap.visible { display: flex; }
+
+/* Strength bar — deliberately quiet, the checklist is the main signal */
+.pw-bar-track {
+    height: 3px;
+    background: var(--bg-1);
+    border-radius: 99px;
+    overflow: hidden;
+}
+.pw-bar-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background: var(--red);
+    transition: width .2s ease, background-color .2s ease;
+}
+.pw-bar-fill.str-1 { width: 25%;  background: var(--red); }
+.pw-bar-fill.str-2 { width: 50%;  background: var(--warn); }
+.pw-bar-fill.str-3 { width: 75%;  background: var(--warn); }
+.pw-bar-fill.str-4 { width: 100%; background: var(--green); }
+
+/* The checklist — each rule lights up the moment it's satisfied */
+.pw-reqs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+@media (max-width: 380px) { .pw-reqs { grid-template-columns: 1fr; } }
+
+.req {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    line-height: 1.3;
+    color: var(--tx-2);
+    transition: color .16s ease;
+}
+
+/* Marker: dim circle -> green check, with a small pop on the transition */
+.req::before {
+    content: "○";
+    flex-shrink: 0;
+    width: 1em;
+    text-align: center;
+    color: var(--tx-2);
+    transition: color .16s ease, transform .16s ease;
+}
+.req.ok        { color: var(--green); }
+.req.ok::before {
+    content: "✓";
+    color: var(--green);
+    transform: scale(1.18);
+}
+
+/* ── Password match line ───────────────────────────────── */
+.pw-match {
+    margin: -4px 0 0;
+    min-height: 1em;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    line-height: 1.3;
+}
+.pw-match.ok  { color: var(--green); }
+.pw-match.err { color: var(--red); }
 
 /* ── Error banner ──────────────────────────────────────── */
 .error {

@@ -58,8 +58,9 @@ $errPass  = $errorCode === "password";
     <label for="password">Heslo</label>
     <input type="password" id="password" name="password" placeholder=" " required<?= $errPass ? ' class="input-error"' : '' ?>>
 
-    <!-- Live strength widget (shown as soon as user starts typing) -->
-    <div class="pw-strength-wrap" id="pw-strength-wrap">
+    <!-- Live strength widget — shown once the user types, or straight away
+         when the server rejected the password so the rules are visible. -->
+    <div class="pw-strength-wrap<?= $errPass ? ' visible' : '' ?>" id="pw-strength-wrap">
         <div class="pw-bar-track"><div class="pw-bar-fill" id="pw-bar-fill"></div></div>
         <ul class="pw-reqs">
             <li class="req" id="req-len">min. 8 znaků</li>
@@ -72,7 +73,7 @@ $errPass  = $errorCode === "password";
     <label for="confirm_password">Potvrzení hesla</label>
 
     <input type="password" id="confirm_password" name="confirm_password" placeholder=" " required<?= $errPass ? ' class="input-error"' : '' ?>>
-    <p class="pw-match" id="pw-match"></p>
+    <p class="pw-match" id="pw-match" role="status" aria-live="polite"></p>
 <div class="form-group">
     <label>
         <input type="checkbox" name="is_teacher" value="1">
