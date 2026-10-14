@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "../backend/session.php";
 if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 require "../backend/funcDB.php";
 $pdo  = connectDB();
@@ -27,7 +27,7 @@ $badgeIcons = [
 $history      = getUserHistory($pdo, $_SESSION["user_id"], 10);
 $accuracy     = $user["Q_answerd"] > 0
     ? round($user["Q_correct"] / $user["Q_answerd"] * 100, 1) : 0;
-$initial = strtoupper(substr($user["username"], 0, 1));
+$initial = mb_strtoupper(mb_substr($user["username"], 0, 1, "UTF-8"), "UTF-8");  // "Š", not half a byte
 ?>
 <!doctype html>
 <html lang="cs">
@@ -62,7 +62,7 @@ $initial = strtoupper(substr($user["username"], 0, 1));
                     <p class="real-name"><?= htmlspecialchars($user["name"]) ?> <?= htmlspecialchars($user["surname"]) ?></p>
                     <p class="email"><?= htmlspecialchars($user["email"]) ?></p>
                     <?php if ($user["teacher"]): ?>
-                        <span class="role-tag">admin</span>
+                        <span class="role-tag">učitel</span>
                     <?php endif; ?>
                 </div>
             </div>

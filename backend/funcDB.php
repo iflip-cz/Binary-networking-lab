@@ -2,7 +2,7 @@
 
 // =========================================================
 //  funcDB.php  –  Database helper functions
-//  Change the dbname below to match your database!
+//  DB credentials live in backend/config.php (see config.example.php).
 // =========================================================
 
 function connectDB() {
@@ -131,7 +131,7 @@ function getTimeAttackLeaderboard($pdo, $seconds, $sysType = 'all', $limit = 10)
     $timeStr   = gmdate("H:i:s", (int)$seconds);   // 30 -> "00:00:30"
     $filterSys = $sysType !== 'all';               // 'all' = every system combined
     $stmt = $pdo->prepare("
-        SELECT u.username, u.anonym, MAX(gh.Q_AC) AS highscore
+        SELECT u.ID_user, u.username, u.anonym, MAX(gh.Q_AC) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
         WHERE gh.Gm = 1 AND gh.Time = :t" . ($filterSys ? " AND gh.sys_type = :sys" : "") . "
@@ -153,7 +153,7 @@ function getTimeAttackLeaderboard($pdo, $seconds, $sysType = 'all', $limit = 10)
 function getStreakLeaderboard($pdo, $sysType = 'all', $limit = 10) {
     $filterSys = $sysType !== 'all';               // 'all' = every system combined
     $stmt = $pdo->prepare("
-        SELECT u.username, u.anonym, MAX(gh.streak) AS highscore
+        SELECT u.ID_user, u.username, u.anonym, MAX(gh.streak) AS highscore
         FROM game_history gh
         JOIN user u ON u.ID_user = gh.Who
         WHERE gh.Gm = 3" . ($filterSys ? " AND gh.sys_type = :sys" : "") . "
@@ -180,8 +180,8 @@ function getStreakLeaderboard($pdo, $sysType = 'all', $limit = 10) {
 function insertGameHistory($pdo, $data) {
     // Convert seconds integer → TIME string 'HH:MM:SS'
     $timeStr = gmdate("H:i:s", (int)$data["time_seconds"]);
-    $sysType = in_array($data["sys_type"] ?? "all", ["all", "bin", "hex", "oct"], true)
-        ? $data["sys_type"] : "all";
+    $sysType = $data["sys_type"] ?? "all";
+    if (!in_array($sysType, ["all", "bin", "hex", "oct"], true)) $sysType = "all";
 
     $stmt = $pdo->prepare("
         INSERT INTO game_history (Gm, sys_type, Q_A, Q_AC, Q_AW, Q_AS, Time, Who, When_Played, streak)

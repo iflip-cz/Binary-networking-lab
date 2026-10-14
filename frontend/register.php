@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "../backend/session.php";
 if (isset($_SESSION["user_id"])) {
     header("Location: mainMenu.php");
     exit;
@@ -7,7 +7,9 @@ if (isset($_SESSION["user_id"])) {
 
 $errorMessages = [
     "fields"          => "Vyplňte prosím všechna povinná pole.",
-    "password"        => "Heslo nesplňuje požadavky (min. 8 znaků, velké + malé písmeno, číslice).",
+    "length"          => "Některé pole je příliš dlouhé (jméno, příjmení a uživatelské jméno max. 20 znaků).",
+    "email"           => "Zadejte prosím platnou e-mailovou adresu.",
+    "password"       => "Heslo nesplňuje požadavky (min. 8 znaků, velké + malé písmeno, číslice).",
     "exists_username" => "Toto uživatelské jméno je již obsazeno.",
     "exists_email"    => "Tento e-mail je již zaregistrovaný.",
 ];
@@ -16,7 +18,7 @@ $errorCode = $_GET["error"] ?? "";
 $old      = $_SESSION["reg_old"] ?? [];
 unset($_SESSION["reg_old"]);
 $errUser  = $errorCode === "exists_username";
-$errEmail = $errorCode === "exists_email";
+$errEmail = $errorCode === "exists_email" || $errorCode === "email";
 $errPass  = $errorCode === "password";
 ?>
 <!doctype html>

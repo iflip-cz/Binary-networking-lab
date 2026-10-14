@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "session.php";
 require "funcDB.php";
 
 // Only accept POST requests
@@ -10,6 +10,8 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
 // ── Error codes used for redirects ───────────────────────────
 // fields          → a required field was left empty
+// length          → a field is longer than its DB column
+// email           → e-mail address isn't valid
 // password        → password failed the strength / match rules
 // exists_username → username already taken
 // exists_email    → email already registered
@@ -39,10 +41,19 @@ $confirm_password = $_POST["confirm_password"]      ?? "";
 // Remember the non-password fields so an error reload can refill them.
 $_SESSION["reg_old"] = compact("username", "name", "surname", "email");
 
-// ── 1. All fields must be filled ─────────────────────────────
+// ── 1. All fields must be filled and fit their DB columns ────
 if ($username === "" || $name === "" || $surname === "" ||
     $email    === "" || $password === "") {
     redirect_error("fields");
+}
+// The form's maxlength is only a hint — a crafted POST skips it, and MySQL
+// would then either error out (strict mode) or silently cut the value.
+if (mb_strlen($username) > 20 || mb_strlen($name) > 20 ||
+    mb_strlen($surname)  > 20 || mb_strlen($email) > 100) {
+    redirect_error("length");
+}
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    redirect_error("email");
 }
 
 // ── 2. Password strength ─────────────────────────────────────
@@ -66,16 +77,24 @@ if (getUserByEmail($pdo, $email)) {
 // ── 5. Create the user ───────────────────────────────────────
 $hash = password_hash($password, PASSWORD_DEFAULT);  // bcrypt ≈ 60 chars
 
-$newId = insertNewUser($pdo, [
-    "username" => $username,
-    "name"     => $name,
-    "surname"  => $surname,
-    "email"    => $email,
-    "password" => $hash,
-    'teacher' => isset($_POST['is_teacher']) ? 1 : 0,
-]);
+try {
+    $newId = insertNewUser($pdo, [
+        "username" => $username,
+        "name"     => $name,
+        "surname"  => $surname,
+        "email"    => $email,
+        "password" => $hash,
+        'teacher' => isset($_POST['is_teacher']) ? 1 : 0,
+    ]);
+} catch (PDOException $e) {
+    // A UNIQUE index (migration_unique_keys.sql) caught a duplicate that slipped
+    // past steps 3–4, e.g. two registrations at the same moment.
+    if ($e->getCode() !== "23000") throw $e;
+    redirect_error(stripos($e->getMessage(), "uq_user_email") !== false ? "exists_email" : "exists_username");
+}
 
 // ── 6. Auto-login after successful registration ──────────────
+session_regenerate_id(true);   // fresh session ID for the now-logged-in user
 $_SESSION["user_id"]  = $newId;
 $_SESSION["username"] = $username;
 $_SESSION["teacher"]  = isset($_POST['is_teacher']) ? 1 : 0;

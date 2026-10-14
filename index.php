@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "backend/session.php";
 if (isset($_SESSION["user_id"])) {
     header("Location: frontend/mainMenu.php");
     exit;

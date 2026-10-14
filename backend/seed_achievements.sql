@@ -5,13 +5,15 @@
 --  to award. Matched by Name, so keep these in sync with the
 --  $rules array in that function.
 --
---  Safe to re-run: it clears the table first. Run in phpMyAdmin
---  (SQL tab) or:  mysql -u root projekt_zwa < backend/seed_achievements.sql
+--  Safe to re-run: existing badges are updated in place, matched by
+--  the UNIQUE Name from migration_unique_keys.sql (run that first —
+--  without it a re-run would insert duplicates). It never deletes:
+--  deleting an achievement also deletes every award of it (FK CASCADE),
+--  so badges players already earned are kept.
+--
+--  Run in phpMyAdmin (SQL tab) or:
+--    mysql -u root projekt_zwa < backend/seed_achievements.sql
 -- =========================================================
-
-DELETE FROM user_achivements;
-DELETE FROM achivements;
-ALTER TABLE achivements AUTO_INCREMENT = 1;
 
 INSERT INTO achivements (Name, rarity, if_condition) VALUES
 ('První hra',     'common',    'Dokonči svou první hru'),
@@ -22,4 +24,7 @@ INSERT INTO achivements (Name, rarity, if_condition) VALUES
 ('Série 25',      'epic',      'Dosáhni série 25 správných v řadě'),
 ('Rychloprsty',   'rare',      '20+ bodů v jedné hře Time Attack'),
 ('Mistr převodů', 'legendary', '40+ bodů v jedné hře Time Attack'),
-('Bez chybičky',  'rare',      'Dohraj hru bez jediné chyby (min. 10 správně)');
+('Bez chybičky',  'rare',      'Dohraj hru bez jediné chyby (min. 10 správně)')
+ON DUPLICATE KEY UPDATE
+    rarity       = VALUES(rarity),
+    if_condition = VALUES(if_condition);

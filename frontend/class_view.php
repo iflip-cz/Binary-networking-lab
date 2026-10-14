@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "../backend/session.php";
 if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 require "../backend/funcDB.php";
 $pdo = connectDB();
@@ -23,6 +23,11 @@ if (!$isOwner) {
 
 // Actions
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Only our own forms carry the CSRF token; drop anything else.
+    if (!csrf_valid()) {
+        header("Location: class_view.php?id=$id_class");
+        exit;
+    }
     if (isset($_POST["remove_user"]) && $isOwner) {
         removeFromClass($pdo, $id_class, (int)$_POST["remove_user"], $userId);
         header("Location: class_view.php?id=$id_class");
@@ -67,6 +72,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
             <span class="class-code-badge"><?= htmlspecialchars($class["code"]) ?></span>
         <?php else: ?>
             <form method="post" style="display:inline;">
+                <?= csrf_field() ?>
                 <button type="submit" name="leave" value="1" class="leave-btn"
                         onclick="return confirm('Opustit třídu?')">Odejít</button>
             </form>
@@ -141,6 +147,7 @@ $members = $isOwner ? getClassMembersDetailed($pdo, $id_class) : [];
                         <td class="mono num"><?= $m["accuracy"] ?>%</td>
                         <td>
                             <form method="post" onsubmit="return confirm('Odebrat ze třídy?')">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="remove_user" value="<?= $m["ID_user"] ?>">
                                 <button type="submit" class="rm-btn">odebrat</button>
                             </form>

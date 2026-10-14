@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "session.php";
 session_unset();
 session_destroy();
 

@@ -491,6 +491,15 @@ header h1 {
     color: var(--tx-0);
 }
 
+/* Shown on the game-over overlay when the result couldn't be saved */
+.save-fail {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: var(--red);
+    text-align: center;
+}
+.save-fail.hidden { display: none; }
+
 .overlay-btns { display: flex; flex-direction: column; gap: 8px; }
 
 .overlay-btns button {

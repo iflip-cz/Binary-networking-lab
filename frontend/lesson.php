@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "../backend/session.php";
 if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 
 $mode = in_array((int)($_GET["mode"] ?? 1), [1,2,3]) ? (int)($_GET["mode"] ?? 1) : 1;
@@ -8,6 +8,16 @@ $type = in_array($_GET["type"] ?? "all", ["all","bin","hex","oct"]) ? ($_GET["ty
 
 $modeLabels = [1 => "Time Attack", 2 => "Training Lab", 3 => "Streak Challenge"];
 $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
+
+// Server-side record of this run: save_game.php measures the real elapsed time
+// against it and accepts exactly one result per started game.
+$gameToken = "";
+if ($mode !== 2) {                                   // Training Lab never saves
+    $gameToken = bin2hex(random_bytes(16));
+    $games = $_SESSION["games"] ?? [];
+    $games[$gameToken] = ["mode" => $mode, "time" => $time, "sys" => $type, "start" => microtime(true)];
+    $_SESSION["games"] = array_slice($games, -5, null, true);   // a few open tabs at most
+}
 ?>
 <!doctype html>
 <html lang="cs">
@@ -94,6 +104,7 @@ $modeLabel  = $modeLabels[$mode] . ($mode === 1 ? " — {$time}s" : "");
         </div>
 
         <div id="new-achv" class="new-achv hidden"></div>
+        <p id="save-fail" class="save-fail hidden" role="status"></p>
 
         <div class="overlay-btns">
             <button onclick="window.location.href='mainMenu.php'">← Menu</button>
@@ -108,6 +119,8 @@ const GAME_MODE  = <?= $mode ?>;
 const TIME_LIMIT = <?= $time ?>;
 const TRAIN_TYPE = "<?= $type ?>";
 const USER_ID    = <?= (int)$_SESSION["user_id"] ?>;
+const CSRF       = <?= json_encode(csrf_token()) ?>;
+const GAME_TOKEN = <?= json_encode($gameToken) ?>;
 
 // ── Theme ─────────────────────────────────────────────
 (function() {
@@ -409,7 +422,8 @@ function buildResultPayload() {
     const score = GAME_MODE === 1 ? correct : maxStreak;
     return JSON.stringify({game_mode: GAME_MODE, time_seconds: TIME_LIMIT,
         q_answered: correct + wrong, q_correct: correct, q_wrong: wrong,
-        q_skipped: 0, streak: maxStreak, score, sys_type: TRAIN_TYPE});
+        q_skipped: 0, streak: maxStreak, score, sys_type: TRAIN_TYPE,
+        csrf: CSRF, game_token: GAME_TOKEN});
 }
 
 let gameSaved = false;
@@ -421,9 +435,21 @@ function saveGame() {
         method:"POST", headers:{"Content-Type":"application/json"},
         body: buildResultPayload()
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+    })
     .then(showNewAchievements)
-    .catch(() => {});
+    .catch(err => showSaveError(err.message));
+}
+
+// Tell the player when the result didn't make it — losing it silently is worse.
+function showSaveError(status) {
+    const el = document.getElementById("save-fail");
+    el.textContent = status === "403"
+        ? "Výsledek se neuložil — přihlášení vypršelo. Přihlas se znovu."
+        : "Výsledek se nepodařilo uložit.";
+    el.classList.remove("hidden");
 }
 
 // Streak Challenge has no timer and no forced end, so if the player leaves
@@ -433,7 +459,9 @@ window.addEventListener('pagehide', () => {
         gameSaved = true;
         navigator.sendBeacon(
             "../backend/save_game.php",
-            new Blob([buildResultPayload()], {type: "application/json"})
+            // text/plain: some Chromium versions refuse a JSON-typed Blob in sendBeacon;
+            // save_game.php reads the raw body either way.
+            new Blob([buildResultPayload()], {type: "text/plain"})
         );
     }
 });

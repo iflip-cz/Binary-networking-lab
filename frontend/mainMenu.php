@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "../backend/session.php";
 if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 require "../backend/funcDB.php";
 $pdo = connectDB();
@@ -7,14 +7,20 @@ $pdo = connectDB();
 // Initial leaderboard view (Time Attack 30s, all systems). Other views load via
 // backend/leaderboard.php as the user switches tab / number-system filter.
 $lbInit = getTimeAttackLeaderboard($pdo, 30, 'all', 10);
-$initial       = strtoupper(substr($_SESSION["username"], 0, 1));
+$initial       = mb_strtoupper(mb_substr($_SESSION["username"], 0, 1, "UTF-8"), "UTF-8");  // "Š", not half a byte
 $isTeacher     = (int)$_SESSION["teacher"] === 1;
 
 // ── Handle class actions ────────────────────────────
 $classMsg = "";
 
-// Student: join class
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["join_code"])) {
+// Class actions must come from our own forms (CSRF token); anything else is dropped.
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !csrf_valid()) {
+    header("Location: mainMenu.php");
+    exit;
+}
+
+// Student: join class (teachers never see the form, and their UI can't list joined classes)
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["join_code"]) && !$isTeacher) {
     $result = joinClassByCode($pdo, $_POST["join_code"], $_SESSION["user_id"]);
     $classMsgMap = [
         'not_found'      => "Kód třídy nebyl nalezen.",
@@ -32,7 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["join_code"])) {
 // Teacher: create class
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["class_name"]) && $isTeacher) {
     $name = trim($_POST["class_name"]);
-    if ($name !== "") {
+    if (mb_strlen($name) > 60) {                     // classes.name is varchar(60)
+        $classMsg = "Název třídy může mít nejvýše 60 znaků.";
+    } elseif ($name !== "") {
         createClass($pdo, $_SESSION["user_id"], $name);
         header("Location: mainMenu.php");
         exit;
@@ -145,7 +153,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
                 <thead><tr><th>#</th><th>Hráč</th><th>Skóre</th></tr></thead>
                 <tbody>
                     <?php foreach ($lbInit as $i => $r): ?>
-                    <tr <?= $r["username"] === $_SESSION["username"] ? 'class="highlight"' : '' ?>>
+                    <tr <?= (int)$r["ID_user"] === (int)$_SESSION["user_id"] ? 'class="highlight"' : '' ?>>
                         <td><?= $i+1 ?></td>
                         <td><?= $r["anonym"] ? "anonym" : htmlspecialchars($r["username"]) ?></td>
                         <td><?= (int)$r["highscore"] ?></td>
@@ -178,6 +186,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
                     <div class="cc-actions">
                         <a href="class_view.php?id=<?= $c["ID_class"] ?>" class="cc-btn">Zobrazit →</a>
                         <form method="post" style="display:inline;" onsubmit="return confirm('Smazat třídu?')">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="delete_class" value="<?= $c["ID_class"] ?>">
                             <button type="submit" class="cc-btn-del">Smazat</button>
                         </form>
@@ -190,6 +199,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
             </div>
 
             <form method="post" class="class-create-form">
+                <?= csrf_field() ?>
                 <input type="text" name="class_name" placeholder="Název nové třídy" maxlength="60" required>
                 <button type="submit">Vytvořit třídu</button>
             </form>
@@ -212,6 +222,7 @@ $studentClasses = !$isTeacher ? getStudentClasses($pdo, $_SESSION["user_id"]) : 
             </div>
 
             <form method="post" class="class-create-form">
+                <?= csrf_field() ?>
                 <input type="text" name="join_code" placeholder="Kód třídy (např. XK3M2P)"
                        maxlength="8" style="text-transform:uppercase;" required>
                 <button type="submit">Připojit se</button>
@@ -273,7 +284,6 @@ document.getElementById('theme-toggle').addEventListener('click', function() {
 });
 
 // ── Leaderboard (tabs + number-system filter, loaded from backend) ──
-const ME = <?= json_encode($_SESSION['username']) ?>;
 // Remember the last viewed board across page loads (e.g. returning from a game).
 let lbKind    = sessionStorage.getItem('lbKind') || 'ta';
 let lbSeconds = parseInt(sessionStorage.getItem('lbSeconds') || '30');
@@ -287,8 +297,8 @@ function lbRender(rows) {
     if (!rows.length) return '<p class="empty-state">Zatím žádné záznamy — zahraj si a buď první.</p>';
     let h = '<table><thead><tr><th>#</th><th>Hráč</th><th>' + metric + '</th></tr></thead><tbody>';
     rows.forEach((r, i) => {
-        const name = Number(r.anonym) ? 'anonym' : lbEsc(r.username);
-        const hl = r.username === ME ? ' class="highlight"' : '';
+        const name = lbEsc(r.name);   // server already swapped anonymous names out
+        const hl = r.me ? ' class="highlight"' : '';
         h += '<tr' + hl + '><td>' + (i + 1) + '</td><td>' + name + '</td><td>' + (parseInt(r.highscore) || 0) + '</td></tr>';
     });
     return h + '</tbody></table>';
